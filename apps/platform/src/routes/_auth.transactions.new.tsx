@@ -12,7 +12,7 @@ function NewTransactionPage() {
 
 	return (
 		<div className="flex flex-col flex-1">
-			<PageHeader title="Tambah Transaksi" />
+			<PageHeader title="Tambah Transaksi" showBack />
 
 			<div className="flex-1 p-4 lg:p-6 w-full flex flex-col items-center">
 				<Card className="w-full max-w-lg shadow-sm border-border/50">

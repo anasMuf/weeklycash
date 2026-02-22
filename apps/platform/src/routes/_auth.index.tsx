@@ -134,7 +134,10 @@ function DashboardPage() {
 			/>
 
 			<div className="flex-1 p-4 lg:p-6 space-y-6 max-w-6xl mx-auto w-full">
-				<BudgetOverview budget={budget} />
+				<BudgetOverview
+					budget={budget}
+					transactionCount={summaryCards.transactionCount}
+				/>
 				<SummaryCards
 					income={summaryCards.totalIncome}
 					expense={summaryCards.totalExpense}
@@ -142,10 +145,10 @@ function DashboardPage() {
 				/>
 
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-6">
-					<div className="min-h-[350px]">
+					<div className="min-h-[350px] order-2 lg:order-1">
 						<CategoryChart data={categoriesData} />
 					</div>
-					<div className="min-h-[350px]">
+					<div className="min-h-[350px] order-1 lg:order-2">
 						<RecentTransactionsList transactions={transactions} />
 					</div>
 				</div>

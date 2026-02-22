@@ -13,9 +13,13 @@ interface BudgetOverviewProps {
 		startDate: string;
 		endDate: string;
 	} | null;
+	transactionCount?: number;
 }
 
-export function BudgetOverview({ budget }: BudgetOverviewProps) {
+export function BudgetOverview({
+	budget,
+	transactionCount,
+}: BudgetOverviewProps) {
 	if (!budget) {
 		return (
 			<Alert className="mb-6 bg-primary/5 border-primary/20">
@@ -77,12 +81,12 @@ export function BudgetOverview({ budget }: BudgetOverviewProps) {
 	return (
 		<Card className="mb-6 shadow-sm overflow-hidden">
 			<CardHeader className="pb-3 border-b border-border/50">
-				<div className="flex justify-between items-center w-full">
-					<CardTitle className="text-lg font-semibold flex items-center gap-2">
+				<div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 w-full">
+					<CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
 						<Target className="h-5 w-5 text-primary" />
 						Budget Minggu Ini
 					</CardTitle>
-					<span className="text-sm text-muted-foreground font-medium bg-muted px-2 py-1 rounded-md">
+					<span className="text-xs sm:text-sm text-muted-foreground font-medium bg-muted px-2 py-1 rounded-md w-fit">
 						{startDate} — {endDate}
 					</span>
 				</div>
@@ -93,7 +97,7 @@ export function BudgetOverview({ budget }: BudgetOverviewProps) {
 						<p className="text-sm font-medium text-muted-foreground">
 							Terpakai
 						</p>
-						<p className="text-2xl font-bold tracking-tight">
+						<p className="text-xl sm:text-2xl font-bold tracking-tight">
 							<CountUp value={spent} formatter={formatIDR} />
 						</p>
 					</div>
@@ -119,6 +123,11 @@ export function BudgetOverview({ budget }: BudgetOverviewProps) {
 						className={`${percentage >= 80 ? "text-destructive animate-pulse" : ""} transition-colors`}
 					>
 						Sisa: <CountUp value={remaining} formatter={formatIDR} />
+						{transactionCount !== undefined && (
+							<span className="text-muted-foreground font-normal ml-1">
+								• {transactionCount} transaksi
+							</span>
+						)}
 					</span>
 					<span
 						className={
