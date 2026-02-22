@@ -16,6 +16,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { api } from "@/utils/api";
+import { formatInputIDR, parseInputIDR } from "@/utils/format";
 
 export interface TransactionFormData {
 	id?: string;
@@ -58,7 +59,7 @@ export function TransactionForm({
 		initialData?.type || "EXPENSE",
 	);
 	const [amount, setAmount] = useState<string>(
-		initialData?.amount?.toString() || "",
+		initialData?.amount ? formatInputIDR(initialData.amount.toString()) : "",
 	);
 	const [note, setNote] = useState(initialData?.title || "");
 	const [categoryId, setCategoryId] = useState(initialData?.categoryId || "");
@@ -130,7 +131,7 @@ export function TransactionForm({
 		}
 
 		transactionMutation.mutate({
-			amount: Number(amount),
+			amount: parseInputIDR(amount),
 			type,
 			categoryId,
 			transactionDate: new Date(date).toISOString(),
@@ -172,16 +173,17 @@ export function TransactionForm({
 			<div className="space-y-2">
 				<Label htmlFor="amount">Nominal</Label>
 				<div className="relative">
-					<span className="absolute left-3 top-2.5 font-medium text-muted-foreground mr-1">
+					<span className="absolute left-3 inset-y-0 flex items-center font-medium text-muted-foreground pointer-events-none">
 						Rp
 					</span>
 					<Input
 						id="amount"
-						type="number"
+						type="text"
+						inputMode="numeric"
 						className="pl-10 font-mono text-lg"
 						placeholder="0"
 						value={amount}
-						onChange={(e) => setAmount(e.target.value)}
+						onChange={(e) => setAmount(formatInputIDR(e.target.value))}
 						required
 					/>
 				</div>

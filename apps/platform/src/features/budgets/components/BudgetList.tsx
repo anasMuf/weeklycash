@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Progress } from "@/components/ui/progress";
+import { formatIDR } from "@/utils/format";
 
 export interface Budget {
 	id: string;
@@ -21,13 +22,6 @@ interface BudgetListProps {
 }
 
 export function BudgetList({ budgets, onEditClick }: BudgetListProps) {
-	const formatIDR = (value: number) =>
-		new Intl.NumberFormat("id-ID", {
-			style: "currency",
-			currency: "IDR",
-			minimumFractionDigits: 0,
-		}).format(value);
-
 	if (budgets.length === 0) {
 		return (
 			<EmptyState

@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { formatIDR } from "@/utils/format";
 
 interface TransactionSummaryProps {
 	totalIncome: number;
@@ -9,13 +10,6 @@ export function TransactionSummary({
 	totalIncome,
 	totalExpense,
 }: TransactionSummaryProps) {
-	const formatIDR = (value: number) =>
-		new Intl.NumberFormat("id-ID", {
-			style: "currency",
-			currency: "IDR",
-			minimumFractionDigits: 0,
-		}).format(value);
-
 	return (
 		<Card className="mb-6 shadow-sm border-blue-100 bg-blue-50/30 dark:border-blue-900/30 dark:bg-blue-900/10">
 			<CardContent className="p-4">

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/utils/api";
+import { formatInputIDR, parseInputIDR } from "@/utils/format";
 
 export interface BudgetFormData {
 	id?: string;
@@ -35,7 +36,7 @@ export function BudgetForm({
 	const queryClient = useQueryClient();
 
 	const [limit, setLimit] = useState<string>(
-		initialData?.limit?.toString() || "",
+		initialData?.limit ? formatInputIDR(initialData.limit.toString()) : "",
 	);
 	const [startDate, setStartDate] = useState(
 		initialData?.startDate ||
@@ -85,7 +86,7 @@ export function BudgetForm({
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		budgetMutation.mutate({
-			amountLimit: Number(limit),
+			amountLimit: parseInputIDR(limit),
 			startDate: new Date(startDate).toISOString(),
 			endDate: new Date(endDate).toISOString(),
 		});
@@ -98,16 +99,17 @@ export function BudgetForm({
 			<div className="space-y-2">
 				<Label htmlFor="limit">Batas Pengeluaran Minggu Ini</Label>
 				<div className="relative">
-					<span className="absolute left-3 top-2.5 font-medium text-muted-foreground mr-1">
+					<span className="absolute left-3 inset-y-0 flex items-center font-medium text-muted-foreground pointer-events-none">
 						Rp
 					</span>
 					<Input
 						id="limit"
-						type="number"
+						type="text"
+						inputMode="numeric"
 						className="pl-10 font-mono text-lg"
 						placeholder="0"
 						value={limit}
-						onChange={(e) => setLimit(e.target.value)}
+						onChange={(e) => setLimit(formatInputIDR(e.target.value))}
 						required
 					/>
 				</div>

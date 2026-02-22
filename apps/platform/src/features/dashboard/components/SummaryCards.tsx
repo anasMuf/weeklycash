@@ -1,6 +1,7 @@
 import { Activity, ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { CountUp } from "@/components/animations/CountUp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatIDR } from "@/utils/format";
 
 interface SummaryCardsProps {
 	income: number;
@@ -13,13 +14,6 @@ export function SummaryCards({
 	expense,
 	transactionCount,
 }: SummaryCardsProps) {
-	const formatIDR = (value: number) =>
-		new Intl.NumberFormat("id-ID", {
-			style: "currency",
-			currency: "IDR",
-			minimumFractionDigits: 0,
-		}).format(value);
-
 	return (
 		<div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
 			<Card className="shadow-sm">

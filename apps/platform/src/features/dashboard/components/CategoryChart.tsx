@@ -10,6 +10,7 @@ import {
 } from "recharts";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatIDR } from "@/utils/format";
 
 interface CategoryData {
 	name: string;
@@ -31,13 +32,6 @@ const COLORS = [
 ];
 
 export function CategoryChart({ data }: CategoryChartProps) {
-	const formatIDR = (value: number) =>
-		new Intl.NumberFormat("id-ID", {
-			style: "currency",
-			currency: "IDR",
-			minimumFractionDigits: 0,
-		}).format(value);
-
 	// biome-ignore lint/suspicious/noExplicitAny: recharts types are tricky with TooltipProps
 	const renderCustomTooltip = ({ active, payload }: any) => {
 		if (active && payload && payload.length) {

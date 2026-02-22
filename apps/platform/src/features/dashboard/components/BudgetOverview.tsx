@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { formatIDR } from "@/utils/format";
 
 interface BudgetOverviewProps {
 	budget: {
@@ -70,13 +71,6 @@ export function BudgetOverview({
 	} else if (percentage >= 60) {
 		progressColorClass = "bg-budget-warning";
 	}
-
-	const formatIDR = (value: number) =>
-		new Intl.NumberFormat("id-ID", {
-			style: "currency",
-			currency: "IDR",
-			minimumFractionDigits: 0,
-		}).format(value);
 
 	return (
 		<Card className="mb-6 shadow-sm overflow-hidden">

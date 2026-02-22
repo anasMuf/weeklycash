@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { formatIDR } from "@/utils/format";
 
 interface Transaction {
 	id: string;
@@ -25,13 +26,6 @@ interface RecentTransactionsListProps {
 export function RecentTransactionsList({
 	transactions,
 }: RecentTransactionsListProps) {
-	const formatIDR = (value: number) =>
-		new Intl.NumberFormat("id-ID", {
-			style: "currency",
-			currency: "IDR",
-			minimumFractionDigits: 0,
-		}).format(value);
-
 	return (
 		<Card className="shadow-sm flex flex-col h-full">
 			<CardHeader className="pb-3 border-b border-border/50">

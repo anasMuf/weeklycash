@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/table";
 import { TransactionForm } from "@/features/transactions/components/TransactionForm";
 import { api } from "@/utils/api";
+import { formatIDR } from "@/utils/format";
 
 export interface Transaction {
 	id: string;
@@ -124,13 +125,6 @@ export function TransactionList({ transactions }: TransactionListProps) {
 			queryClient.invalidateQueries({ queryKey: ["transactions"] });
 		},
 	});
-
-	const formatIDR = (value: number) =>
-		new Intl.NumberFormat("id-ID", {
-			style: "currency",
-			currency: "IDR",
-			minimumFractionDigits: 0,
-		}).format(value);
 
 	return (
 		<div className="space-y-4">
