@@ -7,6 +7,7 @@ export const getTransactionsQuerySchema = z.object({
 	categoryId: z.string().optional(),
 	startDate: z.string().optional(),
 	endDate: z.string().optional(),
+	search: z.string().optional(),
 	page: z
 		.string()
 		.optional()
@@ -28,7 +29,11 @@ export const createTransactionSchema = z.object({
 	categoryId: z.string().min(1, "Kategori wajib dipilih"),
 	transactionDate: z.string().refine((date) => {
 		const dt = new Date(date);
-		return !Number.isNaN(dt.getTime()) && dt <= new Date(); // Past dates or today only
+		// Allow up to 24 hours in the future to account for timezone differences
+		return (
+			!Number.isNaN(dt.getTime()) &&
+			dt.getTime() <= Date.now() + 24 * 60 * 60 * 1000
+		);
 	}, "Tanggal tidak valid atau di masa depan"),
 	note: z.string().optional(),
 });
@@ -42,7 +47,10 @@ export const updateTransactionSchema = z.object({
 		.string()
 		.refine((date) => {
 			const dt = new Date(date);
-			return !Number.isNaN(dt.getTime()) && dt <= new Date();
+			return (
+				!Number.isNaN(dt.getTime()) &&
+				dt.getTime() <= Date.now() + 24 * 60 * 60 * 1000
+			);
 		}, "Tanggal tidak valid atau di masa depan")
 		.optional(),
 	note: z.string().optional(),

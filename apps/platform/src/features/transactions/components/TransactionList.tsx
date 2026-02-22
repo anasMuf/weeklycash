@@ -1,5 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowDownRight, ArrowUpRight, Pencil, Trash2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import {
+	ArrowDownRight,
+	ArrowUpRight,
+	History,
+	Pencil,
+	Plus,
+	Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -14,6 +22,7 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
 	Pagination,
 	PaginationContent,
@@ -67,18 +76,52 @@ export function TransactionList({ transactions }: TransactionListProps) {
 			});
 			if (!res.ok) {
 				const error = await res.json();
-				// @ts-expect-error
 				throw new Error(error.message || "Gagal menghapus transaksi");
 			}
 			return res.json();
 		},
+		onMutate: async (id: string) => {
+			// Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+			await queryClient.cancelQueries({ queryKey: ["transactions"] });
+
+			// Snapshot the previous value
+			const previousTransactions = queryClient.getQueryData([
+				"transactions",
+				"list",
+			]);
+
+			// Optimistically update to the new value
+			queryClient.setQueryData(
+				["transactions", "list"],
+				(old: { data: { id: string }[] } | undefined) => {
+					if (!old || !old.data) return old;
+					return {
+						...old,
+						data: old.data.filter((tx) => tx.id !== id),
+					};
+				},
+			);
+
+			// Return a context object with the snapshotted value
+			return { previousTransactions };
+		},
+		onError: (err, _, context) => {
+			// If the mutation fails, use the context returned from onMutate to roll back
+			if (context?.previousTransactions) {
+				queryClient.setQueryData(
+					["transactions", "list"],
+					context.previousTransactions,
+				);
+			}
+			toast.error(err.message);
+		},
 		onSuccess: () => {
 			toast.success("Transaksi berhasil dihapus");
-			queryClient.invalidateQueries({ queryKey: ["transactions"] });
 			queryClient.invalidateQueries({ queryKey: ["dashboard", "summary"] });
 		},
-		onError: (error) => {
-			toast.error(error.message);
+		onSettled: () => {
+			// Always refetch after error or success to ensure we are in sync with the server
+			queryClient.invalidateQueries({ queryKey: ["transactions"] });
 		},
 	});
 
@@ -106,11 +149,20 @@ export function TransactionList({ transactions }: TransactionListProps) {
 					<TableBody>
 						{transactions.length === 0 ? (
 							<TableRow>
-								<TableCell
-									colSpan={5}
-									className="h-24 text-center text-muted-foreground"
-								>
-									Belum ada transaksi di periode ini.
+								<TableCell colSpan={5} className="py-12">
+									<EmptyState
+										icon={History}
+										title="Belum ada transaksi"
+										description="Coba ganti filter atau tambahkan transaksi baru."
+										action={
+											<Button asChild size="sm">
+												<Link to="/transactions/new">
+													<Plus className="h-4 w-4 mr-2" />
+													Tambah Transaksi
+												</Link>
+											</Button>
+										}
+									/>
 								</TableCell>
 							</TableRow>
 						) : (
@@ -198,78 +250,96 @@ export function TransactionList({ transactions }: TransactionListProps) {
 			</div>
 
 			{/* Mobile Card View */}
-			<div className="grid grid-cols-1 gap-3 md:hidden">
-				{transactions.map((tx) => (
-					<div
-						key={tx.id}
-						className="bg-card border rounded-lg p-4 shadow-sm flex items-center justify-between"
-					>
-						<div className="flex items-center gap-3">
+			<div className="md:hidden">
+				{transactions.length === 0 ? (
+					<EmptyState
+						icon={History}
+						title="Belum ada transaksi"
+						description="Coba ganti filter atau tambahkan transaksi baru."
+						action={
+							<Button asChild size="sm">
+								<Link to="/transactions/new">
+									<Plus className="h-4 w-4 mr-2" />
+									Tambah Transaksi
+								</Link>
+							</Button>
+						}
+					/>
+				) : (
+					<div className="grid grid-cols-1 gap-3">
+						{transactions.map((tx) => (
 							<div
-								className={`p-2.5 rounded-full ${tx.type === "INCOME" ? "bg-income/10" : "bg-expense/10"}`}
+								key={tx.id}
+								className="bg-card border rounded-lg p-4 shadow-sm flex items-center justify-between"
 							>
-								{tx.type === "INCOME" ? (
-									<ArrowDownRight className="h-5 w-5 text-income" />
-								) : (
-									<ArrowUpRight className="h-5 w-5 text-expense" />
-								)}
-							</div>
-							<div>
-								<p className="font-semibold text-sm">{tx.category}</p>
-								<p className="text-xs text-muted-foreground">
-									{tx.title} • {tx.date}
-								</p>
-							</div>
-						</div>
-						<div className="flex flex-col items-end gap-2">
-							<span
-								className={`font-mono font-medium text-sm ${tx.type === "INCOME" ? "text-income" : "text-expense"}`}
-							>
-								{tx.type === "INCOME" ? "+" : "-"}
-								{formatIDR(Math.abs(tx.amount))}
-							</span>
-							<div className="flex -mr-2">
-								<Button
-									variant="ghost"
-									size="icon"
-									className="h-8 w-8"
-									onClick={() => {
-										setActiveTx(tx);
-										setIsEditOpen(true);
-									}}
-								>
-									<Pencil className="h-3 w-3" />
-								</Button>
-								<AlertDialog>
-									<AlertDialogTrigger asChild>
+								<div className="flex items-center gap-3">
+									<div
+										className={`p-2.5 rounded-full ${tx.type === "INCOME" ? "bg-income/10" : "bg-expense/10"}`}
+									>
+										{tx.type === "INCOME" ? (
+											<ArrowDownRight className="h-5 w-5 text-income" />
+										) : (
+											<ArrowUpRight className="h-5 w-5 text-expense" />
+										)}
+									</div>
+									<div>
+										<p className="font-semibold text-sm">{tx.category}</p>
+										<p className="text-xs text-muted-foreground">
+											{tx.title} • {tx.date}
+										</p>
+									</div>
+								</div>
+								<div className="flex flex-col items-end gap-2">
+									<span
+										className={`font-mono font-medium text-sm ${tx.type === "INCOME" ? "text-income" : "text-expense"}`}
+									>
+										{tx.type === "INCOME" ? "+" : "-"}
+										{formatIDR(Math.abs(tx.amount))}
+									</span>
+									<div className="flex -mr-2">
 										<Button
 											variant="ghost"
 											size="icon"
-											className="h-8 w-8 text-destructive"
+											className="h-8 w-8"
+											onClick={() => {
+												setActiveTx(tx);
+												setIsEditOpen(true);
+											}}
 										>
-											<Trash2 className="h-3 w-3" />
+											<Pencil className="h-3 w-3" />
 										</Button>
-									</AlertDialogTrigger>
-									<AlertDialogContent>
-										<AlertDialogHeader>
-											<AlertDialogTitle>Hapus transaksi?</AlertDialogTitle>
-										</AlertDialogHeader>
-										<AlertDialogFooter>
-											<AlertDialogCancel>Batal</AlertDialogCancel>
-											<AlertDialogAction
-												className="bg-destructive text-destructive-foreground"
-												onClick={() => deleteMutation.mutate(tx.id)}
-												disabled={deleteMutation.isPending}
-											>
-												{deleteMutation.isPending ? "Hapus..." : "Hapus"}
-											</AlertDialogAction>
-										</AlertDialogFooter>
-									</AlertDialogContent>
-								</AlertDialog>
+										<AlertDialog>
+											<AlertDialogTrigger asChild>
+												<Button
+													variant="ghost"
+													size="icon"
+													className="h-8 w-8 text-destructive"
+												>
+													<Trash2 className="h-3 w-3" />
+												</Button>
+											</AlertDialogTrigger>
+											<AlertDialogContent>
+												<AlertDialogHeader>
+													<AlertDialogTitle>Hapus transaksi?</AlertDialogTitle>
+												</AlertDialogHeader>
+												<AlertDialogFooter>
+													<AlertDialogCancel>Batal</AlertDialogCancel>
+													<AlertDialogAction
+														className="bg-destructive text-destructive-foreground"
+														onClick={() => deleteMutation.mutate(tx.id)}
+														disabled={deleteMutation.isPending}
+													>
+														{deleteMutation.isPending ? "Hapus..." : "Hapus"}
+													</AlertDialogAction>
+												</AlertDialogFooter>
+											</AlertDialogContent>
+										</AlertDialog>
+									</div>
+								</div>
 							</div>
-						</div>
+						))}
 					</div>
-				))}
+				)}
 			</div>
 
 			<Sheet open={isEditOpen} onOpenChange={setIsEditOpen}>

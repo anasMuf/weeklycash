@@ -1,8 +1,8 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { authMiddleware } from "../../core/middleware/auth.middleware.js";
 import { prisma } from "../../core/utils/prisma.js";
+import { zValidator } from "../../core/utils/validator.js";
 import type { Prisma } from "../../generated/prisma/index.js";
 import {
 	createTransactionSchema,
@@ -36,6 +36,13 @@ export const transactionRoutes = new Hono<{ Variables: Variables }>()
 				end.setHours(23, 59, 59, 999);
 				where.transactionDate.lte = end;
 			}
+		}
+
+		if (query.search) {
+			where.OR = [
+				{ note: { contains: query.search, mode: "insensitive" } },
+				{ category: { name: { contains: query.search, mode: "insensitive" } } },
+			];
 		}
 
 		// Calculate pagination constraints

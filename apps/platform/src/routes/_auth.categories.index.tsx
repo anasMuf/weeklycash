@@ -10,6 +10,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/core/layout/PageHeader";
 import { CategoryForm } from "@/features/categories/components/CategoryForm";
 import {
@@ -39,11 +40,17 @@ function CategoriesPage() {
 			<div className="flex flex-col flex-1">
 				<PageHeader title="Kategori" />
 				<div className="flex-1 p-4 lg:p-6 w-full flex flex-col items-center">
-					<div className="w-full max-w-2xl animate-pulse space-y-8">
+					<div className="w-full max-w-2xl space-y-8">
 						<div className="space-y-4">
-							<div className="h-6 bg-muted rounded w-1/4" />
+							<Skeleton className="h-6 w-1/4" />
 							{[1, 2, 3].map((i) => (
-								<div key={i} className="h-20 bg-muted rounded-xl w-full" />
+								<Skeleton key={i} className="h-20 w-full rounded-xl" />
+							))}
+						</div>
+						<div className="space-y-4 pt-4">
+							<Skeleton className="h-6 w-1/4" />
+							{[1, 2].map((i) => (
+								<Skeleton key={i} className="h-20 w-full rounded-xl" />
 							))}
 						</div>
 					</div>

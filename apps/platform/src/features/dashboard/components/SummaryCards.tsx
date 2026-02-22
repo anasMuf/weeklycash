@@ -1,4 +1,5 @@
 import { Activity, ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { CountUp } from "@/components/animations/CountUp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface SummaryCardsProps {
@@ -30,7 +31,7 @@ export function SummaryCards({
 				</CardHeader>
 				<CardContent>
 					<div className="text-2xl font-bold text-income">
-						{formatIDR(income)}
+						<CountUp value={income} formatter={formatIDR} />
 					</div>
 					<p className="text-xs text-muted-foreground mt-1">Total minggu ini</p>
 				</CardContent>
@@ -45,7 +46,7 @@ export function SummaryCards({
 				</CardHeader>
 				<CardContent>
 					<div className="text-2xl font-bold text-expense">
-						{formatIDR(Math.abs(expense))}
+						<CountUp value={Math.abs(expense)} formatter={formatIDR} />
 					</div>
 					<p className="text-xs text-muted-foreground mt-1">Total minggu ini</p>
 				</CardContent>
@@ -59,7 +60,9 @@ export function SummaryCards({
 					</div>
 				</CardHeader>
 				<CardContent>
-					<div className="text-2xl font-bold">{transactionCount}</div>
+					<div className="text-2xl font-bold">
+						<CountUp value={transactionCount} />
+					</div>
 					<p className="text-xs text-muted-foreground mt-1">
 						Aktivitas minggu ini
 					</p>

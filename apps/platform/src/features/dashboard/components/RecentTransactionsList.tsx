@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface Transaction {
 	id: string;
@@ -39,11 +40,15 @@ export function RecentTransactionsList({
 					Transaksi Terakhir
 				</CardTitle>
 			</CardHeader>
-			<CardContent className="flex-1 flex flex-col p-0">
+			<CardContent className="flex-1 flex flex-col p-0 text-center">
 				{transactions.length === 0 ? (
-					<div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
-						<History className="h-10 w-10 mb-2 opacity-20" />
-						<p className="text-sm">Belum ada transaksi</p>
+					<div className="p-8 flex-1 flex flex-col items-center justify-center">
+						<EmptyState
+							icon={History}
+							title="Belum ada transaksi"
+							description="Mulai catat pengeluaran atau pemasukan Anda hari ini."
+							className="border-none bg-transparent p-0"
+						/>
 					</div>
 				) : (
 					<div className="divide-y divide-border/50">

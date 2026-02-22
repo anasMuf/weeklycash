@@ -1,5 +1,7 @@
+import { Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Progress } from "@/components/ui/progress";
 
 export interface Budget {
@@ -28,9 +30,12 @@ export function BudgetList({ budgets, onEditClick }: BudgetListProps) {
 
 	if (budgets.length === 0) {
 		return (
-			<div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
-				<p>Belum ada history budget.</p>
-			</div>
+			<EmptyState
+				icon={Wallet}
+				title="Belum ada history budget"
+				description="Budget history akan muncul di sini setelah seminggu."
+				className="max-w-2xl py-12"
+			/>
 		);
 	}
 
@@ -77,8 +82,8 @@ export function BudgetList({ budgets, onEditClick }: BudgetListProps) {
 				return (
 					<Card
 						key={budget.id}
-						className={`overflow-hidden transition-all ${budget.isCurrentWeek ? "border-primary/40 shadow-sm ring-1 ring-primary/10" : "opacity-90 hover:opacity-100 cursor-pointer"}`}
-						onClick={() => !budget.isCurrentWeek && onEditClick?.(budget)}
+						className={`overflow-hidden transition-all cursor-pointer hover:border-primary/40 ${budget.isCurrentWeek ? "border-primary/40 shadow-sm ring-1 ring-primary/10" : "opacity-90 hover:opacity-100"}`}
+						onClick={() => onEditClick?.(budget)}
 					>
 						<CardContent className="p-5">
 							<div className="flex items-center justify-between mb-4">

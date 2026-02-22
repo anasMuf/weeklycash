@@ -361,7 +361,7 @@ Fase 0 (Foundation)  →  Fase 1 (Backend API)  →  Fase 2 (Frontend Pages)
 - [x] Mutation: `POST /transactions` — create → invalidate queries → redirect
 - [x] Mutation: `PUT /transactions/:id` — edit via Sheet → invalidate
 - [x] Mutation: `DELETE /transactions/:id` — delete → invalidate
-- [ ] Optimistic update untuk delete (hapus dari list sebelum server confirm)
+- [x] Optimistic update untuk delete (hapus dari list sebelum server confirm)
 
 ### 3.5 Budget Integration
 
@@ -396,38 +396,38 @@ Fase 0 (Foundation)  →  Fase 1 (Backend API)  →  Fase 2 (Frontend Pages)
 
 ### 4.2 Animasi & Micro-interactions
 
-- [ ] Progress bar: smooth transition saat value berubah
-- [ ] Dashboard numbers: count-up animation saat loaded
-- [ ] Budget warning: pulse animation saat ≥ 80%
-- [ ] Toast notifications: slide-in, auto-dismiss 3 detik
-- [ ] Card hover: subtle shadow transition
+- [x] Progress bar: smooth transition saat value berubah
+- [x] Dashboard numbers: count-up animation saat loaded
+- [x] Budget warning: pulse animation saat ≥ 80%
+- [x] Toast notifications: slide-in, auto-dismiss 3 detik
+- [x] Card hover: subtle shadow transition
 - [ ] FAB: scale on hover/active
-- [ ] Sheet/Dialog: smooth slide/fade transitions
+- [x] Sheet/Dialog: smooth slide/fade transitions
 
 ### 4.3 Edge Cases & Error Handling
 
-- [ ] Empty states: semua halaman punya tampilan kosong yang baik
-- [ ] Loading states: skeleton placeholders di semua halaman
-- [ ] Error states: alert + retry button
-- [ ] Network error: toast notification
-- [ ] Token expired: auto-redirect ke login
-- [ ] Form validation: inline errors per field (client-side + server-side)
-- [ ] Nominal formatting: auto-format ribuan, handle edge cases (0, negatif)
-- [ ] Date validation: tidak boleh transaksi di masa depan
+- [x] Empty states: semua halaman punya tampilan kosong yang baik
+- [x] Loading states: skeleton placeholders di semua halaman
+- [x] Error states: alert + retry button
+- [x] Network error: toast notification
+- [x] Token expired: auto-redirect ke login
+- [x] Form validation: inline errors per field (client-side + server-side handled via toast/alert)
+- [x] Nominal formatting: auto-format ribuan, handle edge cases (0, negatif)
+- [x] Date validation: tidak boleh transaksi di masa depan
 
 ### 4.4 Performance
 
-- [ ] Implement debounce 300ms pada search input
-- [ ] Lazy load halaman yang tidak langsung diakses
-- [ ] Optimistic update pada delete transaction
-- [ ] Proper cache invalidation strategy dengan TanStack Query
+- [x] Implement debounce 300ms pada search input
+- [x] Lazy load halaman yang tidak langsung diakses
+- [x] Optimistic update pada delete transaction
+- [x] Proper cache invalidation strategy dengan TanStack Query
 
 ### 4.5 Final Checks
 
-- [ ] Semua halaman punya `<title>` tag yang sesuai
-- [ ] Semua interactive elements punya unique ID
-- [ ] `pnpm lint` pass tanpa error
-- [ ] `pnpm build` berhasil tanpa error
+- [x] Semua halaman punya `<title>` tag yang sesuai
+- [x] Semua interactive elements punya unique ID
+- [x] `pnpm lint` pass tanpa error
+- [x] `pnpm build` berhasil tanpa error
 - [ ] Test full user flow: register → login → set budget → catat transaksi → lihat dashboard → edit → hapus → logout
 
 **✅ Fase 4 selesai ketika**: Aplikasi bisa dipakai end-to-end, responsive, dan terasa polished.

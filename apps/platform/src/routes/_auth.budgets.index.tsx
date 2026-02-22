@@ -17,6 +17,7 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/core/layout/PageHeader";
 import { BudgetForm } from "@/features/budgets/components/BudgetForm";
 import {
@@ -65,9 +66,9 @@ function BudgetsPage() {
 			<div className="flex flex-col flex-1">
 				<PageHeader title="Budget Mingguan" />
 				<div className="flex-1 p-4 lg:p-6 w-full flex flex-col items-center">
-					<div className="w-full max-w-2xl animate-pulse space-y-4">
+					<div className="w-full max-w-2xl space-y-4">
 						{[1, 2, 3].map((i) => (
-							<div key={i} className="h-40 bg-muted rounded-xl w-full" />
+							<Skeleton key={i} className="h-40 w-full rounded-xl" />
 						))}
 					</div>
 				</div>

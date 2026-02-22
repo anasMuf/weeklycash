@@ -1,8 +1,8 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { authMiddleware } from "../../core/middleware/auth.middleware.js";
 import { prisma } from "../../core/utils/prisma.js";
+import { zValidator } from "../../core/utils/validator.js";
 import {
 	loginSchema,
 	registerSchema,

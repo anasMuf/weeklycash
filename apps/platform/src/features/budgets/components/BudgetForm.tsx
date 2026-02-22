@@ -94,7 +94,7 @@ export function BudgetForm({
 	const isLoading = budgetMutation.isPending;
 
 	return (
-		<form onSubmit={handleSubmit} className="space-y-6">
+		<form onSubmit={handleSubmit} className="space-y-6 px-4">
 			<div className="space-y-2">
 				<Label htmlFor="limit">Batas Pengeluaran Minggu Ini</Label>
 				<div className="relative">

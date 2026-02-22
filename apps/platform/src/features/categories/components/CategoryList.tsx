@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Trash2 } from "lucide-react";
+import { Folder, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -22,6 +22,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { api } from "@/utils/api";
 import { CategoryForm } from "./CategoryForm";
 
@@ -48,8 +49,7 @@ export function CategoryList({ title, categories }: CategoryListProps) {
 				param: { id },
 			});
 			if (!res.ok) {
-				const error = await res.json();
-				// @ts-expect-error
+				const error = (await res.json()) as { message?: string };
 				throw new Error(error.message || "Gagal menghapus kategori");
 			}
 			return res.json();
@@ -68,8 +68,13 @@ export function CategoryList({ title, categories }: CategoryListProps) {
 			<h2 className="text-lg font-semibold mb-4 border-b pb-2">{title}</h2>
 			<div className="bg-card border rounded-lg shadow-sm">
 				{categories.length === 0 ? (
-					<div className="p-6 text-center text-muted-foreground text-sm">
-						Belum ada kategori untuk tipe ini.
+					<div className="p-8">
+						<EmptyState
+							icon={Folder}
+							title="Belum ada kategori"
+							description="Mulai tambahkan kategori kustom Anda sendiri."
+							className="border-none bg-transparent p-0"
+						/>
 					</div>
 				) : (
 					<div className="divide-y divide-border/50">

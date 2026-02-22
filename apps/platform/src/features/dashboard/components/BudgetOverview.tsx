@@ -1,4 +1,5 @@
 import { AlertCircle, Target } from "lucide-react";
+import { CountUp } from "@/components/animations/CountUp";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,7 +38,10 @@ export function BudgetOverview({ budget }: BudgetOverviewProps) {
 	if (percentage >= 100) {
 		progressColorClass = "bg-budget-danger animate-pulse";
 		alertWarning = (
-			<Alert variant="destructive" className="mt-4">
+			<Alert
+				variant="destructive"
+				className="mt-4 animate-in fade-in slide-in-from-top-4 duration-500"
+			>
 				<AlertCircle className="h-4 w-4" />
 				<AlertTitle>Over Budget!</AlertTitle>
 				<AlertDescription>
@@ -46,11 +50,11 @@ export function BudgetOverview({ budget }: BudgetOverviewProps) {
 			</Alert>
 		);
 	} else if (percentage >= 80) {
-		progressColorClass = "bg-budget-danger";
+		progressColorClass = "bg-budget-danger animate-pulse";
 		alertWarning = (
 			<Alert
 				variant="destructive"
-				className="mt-4 border-destructive/50 bg-destructive/10 text-destructive"
+				className="mt-4 border-destructive/50 bg-destructive/10 text-destructive animate-in fade-in slide-in-from-top-4 duration-500"
 			>
 				<AlertCircle className="h-4 w-4" />
 				<AlertTitle>Budget Hampir Habis!</AlertTitle>
@@ -71,7 +75,7 @@ export function BudgetOverview({ budget }: BudgetOverviewProps) {
 		}).format(value);
 
 	return (
-		<Card className="mb-6 shadow-sm">
+		<Card className="mb-6 shadow-sm overflow-hidden">
 			<CardHeader className="pb-3 border-b border-border/50">
 				<div className="flex justify-between items-center w-full">
 					<CardTitle className="text-lg font-semibold flex items-center gap-2">
@@ -90,7 +94,7 @@ export function BudgetOverview({ budget }: BudgetOverviewProps) {
 							Terpakai
 						</p>
 						<p className="text-2xl font-bold tracking-tight">
-							{formatIDR(spent)}
+							<CountUp value={spent} formatter={formatIDR} />
 						</p>
 					</div>
 					<div className="text-right space-y-1">
@@ -98,7 +102,7 @@ export function BudgetOverview({ budget }: BudgetOverviewProps) {
 							Dari Total
 						</p>
 						<p className="text-lg font-semibold text-muted-foreground">
-							{formatIDR(limit)}
+							<CountUp value={limit} formatter={formatIDR} />
 						</p>
 					</div>
 				</div>
@@ -106,13 +110,15 @@ export function BudgetOverview({ budget }: BudgetOverviewProps) {
 				<div className="relative mt-4 mb-2">
 					<Progress
 						value={percentage > 100 ? 100 : percentage}
-						className={`h-3 [&>div]:${progressColorClass}`}
+						className={`h-3 transition-all [&>div]:${progressColorClass}`}
 					/>
 				</div>
 
 				<div className="flex justify-between items-center text-sm font-medium">
-					<span className={percentage >= 100 ? "text-destructive" : ""}>
-						Sisa: {formatIDR(remaining)}
+					<span
+						className={`${percentage >= 80 ? "text-destructive animate-pulse" : ""} transition-colors`}
+					>
+						Sisa: <CountUp value={remaining} formatter={formatIDR} />
 					</span>
 					<span
 						className={

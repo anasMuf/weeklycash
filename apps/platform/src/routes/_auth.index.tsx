@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/core/layout/PageHeader";
 import { BudgetOverview } from "@/features/dashboard/components/BudgetOverview";
 import { CategoryChart } from "@/features/dashboard/components/CategoryChart";
@@ -57,16 +58,21 @@ function DashboardPage() {
 		return (
 			<div className="flex flex-col flex-1">
 				<PageHeader title="Dashboard" />
-				<div className="flex-1 p-4 lg:p-6 space-y-6 max-w-6xl mx-auto w-full animate-pulse">
-					<div className="h-48 bg-muted rounded-xl" />
+				<div className="flex-1 p-4 lg:p-6 space-y-6 max-w-6xl mx-auto w-full">
+					{/* Budget Skeleton */}
+					<Skeleton className="h-48 rounded-xl" />
+
+					{/* Summary Cards Skeleton */}
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-						<div className="h-32 bg-muted rounded-xl" />
-						<div className="h-32 bg-muted rounded-xl" />
-						<div className="h-32 bg-muted rounded-xl" />
+						<Skeleton className="h-32 rounded-xl" />
+						<Skeleton className="h-32 rounded-xl" />
+						<Skeleton className="h-32 rounded-xl" />
 					</div>
+
+					{/* Charts & List Skeleton */}
 					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-						<div className="h-80 bg-muted rounded-xl" />
-						<div className="h-80 bg-muted rounded-xl" />
+						<Skeleton className="h-80 rounded-xl" />
+						<Skeleton className="h-80 rounded-xl" />
 					</div>
 				</div>
 			</div>
