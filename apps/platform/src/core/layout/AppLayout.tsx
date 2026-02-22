@@ -1,5 +1,6 @@
 import type React from "react";
 import { BottomNav } from "./BottomNav";
+import { Fab } from "./Fab";
 import { Sidebar } from "./Sidebar";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -9,6 +10,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 			<main className="flex-1 pb-16 md:pb-0 relative flex flex-col">
 				{children}
 			</main>
+			<Fab />
 			<BottomNav />
 		</div>
 	);
