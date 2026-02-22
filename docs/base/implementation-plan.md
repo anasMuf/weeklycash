@@ -75,28 +75,29 @@ Fase 0 (Foundation)  →  Fase 1 (Backend API)  →  Fase 2 (Frontend Pages)
   - Verify JWT → inject `userId` ke Hono context (`c.set("userId", ...)`)
   - Return 401 jika token invalid/missing
 
-### 0.4 Backend Structure
+### 0.4 Backend Structure (Feature-based)
 
 - [ ] Buat struktur folder backend:
   ```
   apps/api/src/
-  ├── index.ts              # Entry point, mount routes
-  ├── routes/
-  │   ├── auth.ts           # /auth/*
-  │   ├── categories.ts     # /categories/*
-  │   ├── transactions.ts   # /transactions/*
-  │   ├── budgets.ts        # /budgets/*
-  │   └── dashboard.ts      # /dashboard/*
-  ├── middleware/
-  │   └── auth.ts           # JWT auth middleware
-  ├── validators/
-  │   ├── auth.ts           # Zod schemas untuk auth
-  │   ├── category.ts       
-  │   ├── transaction.ts    
-  │   └── budget.ts         
-  └── utils/
-      ├── prisma.ts         # Prisma client instance (sudah ada)
-      └── auth.ts           # Hash, JWT utilities
+  ├── index.ts                # Entry point, mount routes
+  ├── core/                   # Global configuration & utilities
+  │   ├── middleware/
+  │   │   └── auth.middleware.ts
+  │   └── utils/
+  │       └── prisma.ts       # Prisma client instance
+  └── modules/                # Feature modules
+      ├── auth/
+      │   ├── auth.routes.ts
+      │   └── auth.utils.ts
+      ├── categories/
+      │   └── categories.routes.ts
+      ├── transactions/
+      │   └── transactions.routes.ts
+      ├── budgets/
+      │   └── budgets.routes.ts
+      └── dashboard/
+          └── dashboard.routes.ts
   ```
 - [ ] Setup `index.ts`: mount semua route files ke app dengan prefix `/api/v1`
 - [ ] Export `AppType` dari `index.ts` untuk Hono RPC
