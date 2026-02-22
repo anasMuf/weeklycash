@@ -3,6 +3,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import {
 	createRootRouteWithContext,
 	HeadContent,
+	Link,
 	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
@@ -26,7 +27,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				content: "width=device-width, initial-scale=1",
 			},
 			{
-				title: "TanStack Start Starter",
+				title: "WeeklyCash",
 			},
 		],
 		links: [
@@ -37,6 +38,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 		],
 	}),
 	shellComponent: RootDocument,
+	notFoundComponent: NotFound,
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
@@ -65,5 +67,23 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<Scripts />
 			</body>
 		</html>
+	);
+}
+
+function NotFound() {
+	return (
+		<div className="flex h-screen w-full flex-col items-center justify-center gap-4 p-4 text-center">
+			<p className="text-7xl font-bold text-muted-foreground/30">404</p>
+			<h1 className="text-2xl font-semibold">Halaman tidak ditemukan</h1>
+			<p className="text-muted-foreground max-w-md">
+				Halaman yang Anda cari tidak ada atau sudah dipindahkan.
+			</p>
+			<Link
+				to="/"
+				className="mt-2 inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+			>
+				Kembali ke Dashboard
+			</Link>
+		</div>
 	);
 }

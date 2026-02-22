@@ -66,7 +66,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
 						<p className="text-sm">Belum ada pengeluaran minggu ini</p>
 					</div>
 				) : (
-					<ResponsiveContainer width="100%" height="100%" minHeight={250}>
+					<ResponsiveContainer width="100%" height={280}>
 						<PieChart>
 							<Pie
 								data={sortedData}
