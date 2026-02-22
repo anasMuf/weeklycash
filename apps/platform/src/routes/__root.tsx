@@ -6,7 +6,7 @@ import {
 	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-
+import { Toaster } from "@/components/ui/sonner";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import TanStackQueryProvider from "../integrations/tanstack-query/root-provider";
 import appCss from "../styles.css?url";
@@ -48,6 +48,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			<body>
 				<TanStackQueryProvider>
 					{children}
+					<Toaster />
 					<TanStackDevtools
 						config={{
 							position: "bottom-right",

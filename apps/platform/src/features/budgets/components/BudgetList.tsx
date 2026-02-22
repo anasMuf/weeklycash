@@ -9,6 +9,8 @@ export interface Budget {
 	startDate: string;
 	endDate: string;
 	isCurrentWeek: boolean;
+	rawStartDate: string;
+	rawEndDate: string;
 }
 
 interface BudgetListProps {

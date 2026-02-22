@@ -1,8 +1,10 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 import { Lock, LogOut } from "lucide-react";
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -16,31 +18,63 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { setAuthTokenAtom } from "@/core/auth/atoms";
+import { api } from "@/utils/api";
 
 export function SettingsForm() {
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 	const setAuthToken = useSetAtom(setAuthTokenAtom);
 
-	const [name, setName] = useState("Anas Mufti");
-	const [isLoading, setIsLoading] = useState(false);
-	const email = "user@example.com"; // Readonly mock data
+	// Fetch user profile
+	const { data: profileResponse, isLoading: isFetching } = useQuery({
+		queryKey: ["auth", "me"],
+		queryFn: async () => {
+			const res = await api.api.v1.auth.me.$get();
+			if (!res.ok) throw new Error("Failed to fetch profile");
+			return res.json();
+		},
+	});
+
+	const [fullName, setFullName] = useState("");
+
+	// Update local state when data is fetched
+	useEffect(() => {
+		if (profileResponse?.data?.fullName) {
+			setFullName(profileResponse.data.fullName);
+		}
+	}, [profileResponse]);
+
+	// Update profile mutation
+	const updateMutation = useMutation({
+		mutationFn: async (newName: string) => {
+			const res = await api.api.v1.auth.me.$put({
+				json: { fullName: newName },
+			});
+			if (!res.ok) throw new Error("Failed to update profile");
+			return res.json();
+		},
+		onSuccess: () => {
+			toast.success("Profil berhasil diperbarui");
+			queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+		},
+		onError: (error) => {
+			toast.error(error.message || "Gagal memperbarui profil");
+		},
+	});
 
 	const handleSave = (e: FormEvent) => {
 		e.preventDefault();
-		setIsLoading(true);
-
-		// Simulate API Call
-		setTimeout(() => {
-			setIsLoading(false);
-			// toast("Profil berhasil diupdate")
-		}, 800);
+		updateMutation.mutate(fullName);
 	};
 
 	const handleLogout = () => {
-		// Clear auth token and redirect to login
 		setAuthToken(null);
+		queryClient.clear();
 		navigate({ to: "/login" });
 	};
+
+	const email = profileResponse?.data?.email || "...";
+	const isLoading = isFetching || updateMutation.isPending;
 
 	return (
 		<div className="space-y-6 w-full max-w-lg mx-auto">
@@ -57,8 +91,8 @@ export function SettingsForm() {
 							<Label htmlFor="name">Nama Lengkap</Label>
 							<Input
 								id="name"
-								value={name}
-								onChange={(e) => setName(e.target.value)}
+								value={fullName}
+								onChange={(e) => setFullName(e.target.value)}
 								disabled={isLoading}
 								required
 							/>

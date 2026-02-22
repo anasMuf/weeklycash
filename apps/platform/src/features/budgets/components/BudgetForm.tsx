@@ -1,7 +1,11 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { api } from "@/utils/api";
 
 export interface BudgetFormData {
 	id?: string;
@@ -16,11 +20,20 @@ interface BudgetFormProps {
 	autoFillDates?: { start: string; end: string };
 }
 
+interface BudgetPayload {
+	amountLimit: number;
+	startDate: string;
+	endDate: string;
+}
+
 export function BudgetForm({
 	initialData,
 	onSuccess,
 	autoFillDates,
 }: BudgetFormProps) {
+	const navigate = useNavigate();
+	const queryClient = useQueryClient();
+
 	const [limit, setLimit] = useState<string>(
 		initialData?.limit?.toString() || "",
 	);
@@ -34,18 +47,51 @@ export function BudgetForm({
 			autoFillDates?.end ||
 			new Date().toISOString().split("T")[0],
 	);
-	const [isLoading, setIsLoading] = useState(false);
+
+	const budgetMutation = useMutation({
+		mutationFn: async (payload: BudgetPayload) => {
+			if (initialData?.id) {
+				const res = await api.api.v1.budgets[":id"].$put({
+					param: { id: initialData.id },
+					json: { amountLimit: payload.amountLimit },
+				});
+				if (!res.ok) {
+					const error = await res.json();
+					throw new Error(error.message || "Gagal memperbarui anggaran");
+				}
+				return res.json();
+			}
+			const res = await api.api.v1.budgets.$post({
+				json: payload,
+			});
+			if (!res.ok) {
+				const error = await res.json();
+				throw new Error(error.message || "Gagal membuat anggaran");
+			}
+			return res.json();
+		},
+		onSuccess: () => {
+			toast.success(initialData ? "Anggaran diperbarui" : "Anggaran dibuat");
+			queryClient.invalidateQueries({ queryKey: ["budgets"] });
+			queryClient.invalidateQueries({ queryKey: ["dashboard", "summary"] });
+			if (onSuccess) onSuccess();
+			else navigate({ to: "/budgets" });
+		},
+		onError: (error) => {
+			toast.error(error.message);
+		},
+	});
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		setIsLoading(true);
-
-		// Simulate API req
-		setTimeout(() => {
-			setIsLoading(false);
-			if (onSuccess) onSuccess();
-		}, 600);
+		budgetMutation.mutate({
+			amountLimit: Number(limit),
+			startDate: new Date(startDate).toISOString(),
+			endDate: new Date(endDate).toISOString(),
+		});
 	};
+
+	const isLoading = budgetMutation.isPending;
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6">

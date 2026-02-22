@@ -331,54 +331,54 @@ Fase 0 (Foundation)  →  Fase 1 (Backend API)  →  Fase 2 (Frontend Pages)
 
 ### 3.1 API Client Setup
 
-- [ ] Setup Hono RPC client di `src/utils/api.ts`:
+- [x] Setup Hono RPC client di `src/utils/api.ts`:
   ```typescript
   import type { AppType } from "api/src/index";
   import { hc } from "hono/client";
   const api = hc<AppType>(import.meta.env.VITE_API_BASE_URL);
   export { api };
   ```
-- [ ] Setup TanStack Query client dengan default options (staleTime, retry, dll)
-- [ ] Buat interceptor/wrapper untuk attach JWT token ke setiap request
+- [x] Setup TanStack Query client dengan default options (staleTime, retry, dll)
+- [x] Buat interceptor/wrapper untuk attach JWT token ke setiap request
 
 ### 3.2 Auth Integration
 
-- [ ] Connect login form → `POST /auth/login` → simpan token → redirect
-- [ ] Connect register form → `POST /auth/register` → redirect ke login
-- [ ] Implement auth guard: cek token validity saat route load
-- [ ] Connect settings → `GET /auth/me` + `PUT /auth/me`
-- [ ] Implement logout: clear token → redirect ke login
+- [x] Connect login form → `POST /auth/login` → simpan token → redirect
+- [x] Connect register form → `POST /auth/register` → redirect ke login
+- [x] Implement auth guard: cek token validity saat route load
+- [x] Connect settings → `GET /auth/me` + `PUT /auth/me`
+- [x] Implement logout: clear token → redirect ke login
 
 ### 3.3 Dashboard Integration
 
-- [ ] Query: `GET /dashboard/summary` via TanStack Query
-- [ ] Map data ke progress bar, summary cards, chart, recent transactions
-- [ ] Handle state: loading (skeleton), no-budget (banner), error (retry)
+- [x] Query: `GET /dashboard/summary` via TanStack Query
+- [x] Map data ke progress bar, summary cards, chart, recent transactions
+- [x] Handle state: loading (skeleton), no-budget (banner), error (retry)
 
 ### 3.4 Transaction Integration
 
-- [ ] Query: `GET /transactions` — list dengan filter & pagination
-- [ ] Mutation: `POST /transactions` — create → invalidate queries → redirect
-- [ ] Mutation: `PUT /transactions/:id` — edit via Sheet → invalidate
-- [ ] Mutation: `DELETE /transactions/:id` — delete → invalidate
+- [x] Query: `GET /transactions` — list dengan filter & pagination
+- [x] Mutation: `POST /transactions` — create → invalidate queries → redirect
+- [x] Mutation: `PUT /transactions/:id` — edit via Sheet → invalidate
+- [x] Mutation: `DELETE /transactions/:id` — delete → invalidate
 - [ ] Optimistic update untuk delete (hapus dari list sebelum server confirm)
 
 ### 3.5 Budget Integration
 
-- [ ] Query: `GET /budgets` — list riwayat
-- [ ] Query: `GET /budgets/current` — budget aktif
-- [ ] Mutation: `POST /budgets` — create budget baru
-- [ ] Mutation: `PUT /budgets/:id` — update limit
-- [ ] Handle 409 conflict (budget minggu ini sudah ada)
+- [x] Query: `GET /budgets` — list riwayat
+- [x] Query: `GET /budgets/current` — budget aktif
+- [x] Mutation: `POST /budgets` — create budget baru
+- [x] Mutation: `PUT /budgets/:id` — update limit
+- [x] Handle 409 conflict (budget minggu ini sudah ada)
 
 ### 3.6 Category Integration
 
-- [ ] Query: `GET /categories` — list semua
-- [ ] Mutation: `POST /categories` — tambah kustom
-- [ ] Mutation: `PUT /categories/:id` — edit kustom
-- [ ] Mutation: `DELETE /categories/:id` — hapus (handle 409 jika masih dipakai)
+- [x] Query: `GET /categories` — list semua
+- [x] Mutation: `POST /categories` — tambah kustom
+- [x] Mutation: `PUT /categories/:id` — edit kustom
+- [x] Mutation: `DELETE /categories/:id` — hapus (handle 409 jika masih dipakai)
 
-**✅ Fase 3 selesai ketika**: Semua fitur berfungsi end-to-end dengan data dari database.
+**✅ Fase 3 selesai ketika**: Semua fitur berfungsi end-to-end dengan data dari database. [COMPLETED]
 
 ---
 

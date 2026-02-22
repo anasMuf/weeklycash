@@ -1,9 +1,12 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowDownRight, ArrowUpRight, Smile } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { api } from "@/utils/api";
 
 export interface CategoryFormData {
 	id?: string;
@@ -18,27 +21,65 @@ interface CategoryFormProps {
 	onCancel?: () => void;
 }
 
+interface CategoryPayload {
+	name: string;
+	type: "INCOME" | "EXPENSE";
+	icon: string;
+}
+
 export function CategoryForm({
 	initialData,
 	onSuccess,
 	onCancel,
 }: CategoryFormProps) {
+	const queryClient = useQueryClient();
+
 	const [type, setType] = useState<"INCOME" | "EXPENSE">(
 		initialData?.type || "EXPENSE",
 	);
 	const [name, setName] = useState(initialData?.name || "");
 	const [icon, setIcon] = useState(initialData?.icon || "");
-	const [isLoading, setIsLoading] = useState(false);
+
+	const categoryMutation = useMutation({
+		mutationFn: async (payload: CategoryPayload) => {
+			if (initialData?.id) {
+				const res = await api.api.v1.categories[":id"].$put({
+					param: { id: initialData.id },
+					json: payload,
+				});
+				if (!res.ok) {
+					const error = await res.json();
+					throw new Error(error.message || "Gagal memperbarui kategori");
+				}
+				return res.json();
+			}
+			const res = await api.api.v1.categories.$post({
+				json: payload,
+			});
+			if (!res.ok) {
+				const error = await res.json();
+				throw new Error(error.message || "Gagal menambahkan kategori");
+			}
+			return res.json();
+		},
+		onSuccess: () => {
+			toast.success(
+				initialData ? "Kategori diperbarui" : "Kategori ditambahkan",
+			);
+			queryClient.invalidateQueries({ queryKey: ["categories"] });
+			if (onSuccess) onSuccess();
+		},
+		onError: (error) => {
+			toast.error(error.message);
+		},
+	});
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		setIsLoading(true);
-
-		setTimeout(() => {
-			setIsLoading(false);
-			if (onSuccess) onSuccess();
-		}, 600);
+		categoryMutation.mutate({ name, type, icon });
 	};
+
+	const isLoading = categoryMutation.isPending;
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6 pt-2">

@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { useState } from "react";
@@ -18,59 +19,93 @@ import {
 } from "@/components/ui/sheet";
 import { PageHeader } from "@/core/layout/PageHeader";
 import { BudgetForm } from "@/features/budgets/components/BudgetForm";
-import type { Budget } from "@/features/budgets/components/BudgetList";
-import { BudgetList } from "@/features/budgets/components/BudgetList";
+import {
+	type Budget,
+	BudgetList,
+} from "@/features/budgets/components/BudgetList";
+import { api } from "@/utils/api";
 
 export const Route = createFileRoute("/_auth/budgets/")({
 	component: BudgetsPage,
 });
 
-const MOCK_BUDGETS: Budget[] = [
-	{
-		id: "1",
-		limit: 700000,
-		spent: 450000,
-		startDate: "17 Feb",
-		endDate: "23 Feb 2026",
-		isCurrentWeek: true,
-	},
-	{
-		id: "2",
-		limit: 700000,
-		spent: 620000,
-		startDate: "10 Feb",
-		endDate: "16 Feb 2026",
-		isCurrentWeek: false,
-	},
-	{
-		id: "3",
-		limit: 600000,
-		spent: 750000,
-		startDate: "3 Feb",
-		endDate: "9 Feb 2026",
-		isCurrentWeek: false,
-	},
-	{
-		id: "4",
-		limit: 500000,
-		spent: 450000,
-		startDate: "27 Jan",
-		endDate: "2 Feb 2026",
-		isCurrentWeek: false,
-	},
-];
+interface RawBudget {
+	id: string;
+	amountLimit: number;
+	startDate: string;
+	endDate: string;
+	spent: number;
+	remaining: number;
+	percentage: number;
+}
 
 function BudgetsPage() {
 	const [isEditOpen, setIsEditOpen] = useState(false);
 	const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
+
+	const { data: budgetResponse, isLoading } = useQuery({
+		queryKey: ["budgets", "list"],
+		queryFn: async () => {
+			const res = await api.api.v1.budgets.$get({ query: {} });
+			if (!res.ok) throw new Error("Failed to fetch budgets");
+			return res.json() as Promise<{
+				data: RawBudget[];
+				meta: {
+					page: number;
+					limit: number;
+					total: number;
+					totalPages: number;
+				};
+			}>;
+		},
+	});
+
+	if (isLoading) {
+		return (
+			<div className="flex flex-col flex-1">
+				<PageHeader title="Budget Mingguan" />
+				<div className="flex-1 p-4 lg:p-6 w-full flex flex-col items-center">
+					<div className="w-full max-w-2xl animate-pulse space-y-4">
+						{[1, 2, 3].map((i) => (
+							<div key={i} className="h-40 bg-muted rounded-xl w-full" />
+						))}
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	const budgets = budgetResponse?.data || [];
 
 	const handleEditClick = (budget: Budget) => {
 		setSelectedBudget(budget);
 		setIsEditOpen(true);
 	};
 
-	// We only show 'New' button if the current week budget is not found or not created yet
-	const hasCurrentWeekBudget = MOCK_BUDGETS.some((b) => b.isCurrentWeek);
+	const today = new Date();
+	const mappedBudgets = budgets.map((b: RawBudget): Budget => {
+		const start = new Date(b.startDate);
+		const end = new Date(b.endDate);
+		return {
+			id: b.id,
+			limit: b.amountLimit,
+			spent: b.spent,
+			startDate: start.toLocaleDateString("id-ID", {
+				day: "numeric",
+				month: "short",
+			}),
+			endDate: end.toLocaleDateString("id-ID", {
+				day: "numeric",
+				month: "short",
+				year: "numeric",
+			}),
+			isCurrentWeek: start <= today && end >= today,
+			rawStartDate: b.startDate,
+			rawEndDate: b.endDate,
+		};
+	});
+
+	const hasCurrentWeekBudget = mappedBudgets.some((b) => b.isCurrentWeek);
 
 	return (
 		<div className="flex flex-col flex-1">
@@ -90,7 +125,7 @@ function BudgetsPage() {
 
 			<div className="flex-1 p-4 lg:p-6 w-full flex flex-col items-center">
 				<div className="w-full max-w-2xl">
-					<BudgetList budgets={MOCK_BUDGETS} onEditClick={handleEditClick} />
+					<BudgetList budgets={mappedBudgets} onEditClick={handleEditClick} />
 
 					<Pagination className="mt-8 justify-center">
 						<PaginationContent>
@@ -101,9 +136,6 @@ function BudgetsPage() {
 								<PaginationLink href="#" isActive>
 									1
 								</PaginationLink>
-							</PaginationItem>
-							<PaginationItem>
-								<PaginationLink href="#">2</PaginationLink>
 							</PaginationItem>
 							<PaginationItem>
 								<PaginationNext href="#" />
@@ -126,11 +158,12 @@ function BudgetsPage() {
 							initialData={{
 								id: selectedBudget.id,
 								limit: selectedBudget.limit,
-								// Mock mapping to ISO formats for native date inputs
-								startDate: "2026-02-17",
-								endDate: "2026-02-23",
+								startDate: selectedBudget.rawStartDate.split("T")[0],
+								endDate: selectedBudget.rawEndDate.split("T")[0],
 							}}
-							onSuccess={() => setIsEditOpen(false)}
+							onSuccess={() => {
+								setIsEditOpen(false);
+							}}
 						/>
 					)}
 				</SheetContent>

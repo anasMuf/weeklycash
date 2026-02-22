@@ -1,5 +1,7 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -20,12 +22,13 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import { api } from "@/utils/api";
 import { CategoryForm } from "./CategoryForm";
 
 export interface Category {
 	id: string;
 	name: string;
-	icon: string;
+	icon: string | null;
 	type: "INCOME" | "EXPENSE";
 	isDefault: boolean;
 }
@@ -36,7 +39,29 @@ interface CategoryListProps {
 }
 
 export function CategoryList({ title, categories }: CategoryListProps) {
+	const queryClient = useQueryClient();
 	const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+
+	const deleteMutation = useMutation({
+		mutationFn: async (id: string) => {
+			const res = await api.api.v1.categories[":id"].$delete({
+				param: { id },
+			});
+			if (!res.ok) {
+				const error = await res.json();
+				// @ts-expect-error
+				throw new Error(error.message || "Gagal menghapus kategori");
+			}
+			return res.json();
+		},
+		onSuccess: () => {
+			toast.success("Kategori berhasil dihapus");
+			queryClient.invalidateQueries({ queryKey: ["categories"] });
+		},
+		onError: (error) => {
+			toast.error(error.message);
+		},
+	});
 
 	return (
 		<div className="mb-8">
@@ -55,7 +80,7 @@ export function CategoryList({ title, categories }: CategoryListProps) {
 							>
 								<div className="flex items-center gap-3">
 									<div className="text-2xl w-10 h-10 flex items-center justify-center bg-muted/60 rounded-full">
-										{category.icon}
+										{category.icon || "📦"}
 									</div>
 									<div className="flex flex-col">
 										<span className="font-medium text-sm sm:text-base">
@@ -103,7 +128,10 @@ export function CategoryList({ title, categories }: CategoryListProps) {
 													<DialogTitle>Edit Kategori</DialogTitle>
 												</DialogHeader>
 												<CategoryForm
-													initialData={category}
+													initialData={{
+														...category,
+														icon: category.icon || "",
+													}}
 													onSuccess={() => setEditingCategory(null)}
 													onCancel={() => setEditingCategory(null)}
 												/>
@@ -128,14 +156,20 @@ export function CategoryList({ title, categories }: CategoryListProps) {
 													</AlertDialogTitle>
 													<AlertDialogDescription>
 														Apakah Anda yakin ingin menghapus kategori kustom
-														ini? Jika kategori ini sedang dipakai, mungkin akan
-														terjadi error.
+														ini? Jika kategori ini sedang dipakai pada
+														transaksi, proses hapus akan gagal.
 													</AlertDialogDescription>
 												</AlertDialogHeader>
 												<AlertDialogFooter>
 													<AlertDialogCancel>Batal</AlertDialogCancel>
-													<AlertDialogAction className="bg-destructive text-destructive-foreground">
-														Hapus Kategori
+													<AlertDialogAction
+														className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+														onClick={() => deleteMutation.mutate(category.id)}
+														disabled={deleteMutation.isPending}
+													>
+														{deleteMutation.isPending
+															? "Menghapus..."
+															: "Hapus Kategori"}
 													</AlertDialogAction>
 												</AlertDialogFooter>
 											</AlertDialogContent>

@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
+import { useSetAtom } from "jotai";
 import { Wallet } from "lucide-react";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -13,9 +14,12 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { setAuthTokenAtom } from "@/core/auth/atoms";
+import { api } from "@/utils/api";
 
 export function LoginForm() {
 	const navigate = useNavigate();
+	const setAuth = useSetAtom(setAuthTokenAtom);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
@@ -32,17 +36,26 @@ export function LoginForm() {
 
 		setIsLoading(true);
 
-		// Simulate network request
-		setTimeout(() => {
-			setIsLoading(false);
-			// Example auth logic... connect with real API and Jotai store later
-			if (email === "user@example.com" && password === "dummyhash123") {
-				// Success dummy login -> Redirect
+		try {
+			const res = await api.api.v1.auth.login.$post({
+				json: { email, password },
+			});
+
+			if (res.ok) {
+				const result = await res.json();
+				setAuth(result.data.token);
+				// Success login -> Redirect
 				navigate({ to: "/" });
 			} else {
-				setError("Email atau password salah");
+				const errorData = await res.json();
+				setError(errorData.message || "Email atau password salah");
 			}
-		}, 1000);
+		} catch (err) {
+			console.error("Login error:", err);
+			setError("Gagal menghubungi server. Pastikan API menyala.");
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	return (

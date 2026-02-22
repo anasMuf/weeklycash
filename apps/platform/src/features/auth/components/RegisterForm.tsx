@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Wallet } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { api } from "@/utils/api";
 
 export function RegisterForm() {
 	const navigate = useNavigate();
@@ -38,14 +40,24 @@ export function RegisterForm() {
 
 		setIsLoading(true);
 
-		// Simulate network request
-		setTimeout(() => {
+		try {
+			const res = await api.api.v1.auth.register.$post({
+				json: { email, password, fullName },
+			});
+
+			if (res.ok) {
+				toast.success("Registrasi berhasil! Silakan login.");
+				navigate({ to: "/login" });
+			} else {
+				const errorData = await res.json();
+				setError(errorData.message || "Gagal melakukan registrasi");
+			}
+		} catch (err) {
+			console.error("Register error:", err);
+			setError("Gagal menghubungi server. Pastikan API menyala.");
+		} finally {
 			setIsLoading(false);
-			// Simulate success -> Redirect to login
-			// Actual Toast implementation will be hooked to jotai state or sonner API in the future
-			console.log("Registered!");
-			navigate({ to: "/login" });
-		}, 1000);
+		}
 	};
 
 	return (

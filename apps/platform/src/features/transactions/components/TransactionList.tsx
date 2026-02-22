@@ -1,5 +1,7 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowDownRight, ArrowUpRight, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -25,7 +27,6 @@ import {
 	SheetContent,
 	SheetHeader,
 	SheetTitle,
-	SheetTrigger,
 } from "@/components/ui/sheet";
 import {
 	Table,
@@ -36,6 +37,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { TransactionForm } from "@/features/transactions/components/TransactionForm";
+import { api } from "@/utils/api";
 
 export interface Transaction {
 	id: string;
@@ -44,6 +46,9 @@ export interface Transaction {
 	date: string;
 	type: "INCOME" | "EXPENSE";
 	category: string;
+	categoryId: string;
+	rawDate: string;
+	rawNote?: string;
 }
 
 interface TransactionListProps {
@@ -51,7 +56,31 @@ interface TransactionListProps {
 }
 
 export function TransactionList({ transactions }: TransactionListProps) {
+	const queryClient = useQueryClient();
 	const [activeTx, setActiveTx] = useState<Transaction | null>(null);
+	const [isEditOpen, setIsEditOpen] = useState(false);
+
+	const deleteMutation = useMutation({
+		mutationFn: async (id: string) => {
+			const res = await api.api.v1.transactions[":id"].$delete({
+				param: { id },
+			});
+			if (!res.ok) {
+				const error = await res.json();
+				// @ts-expect-error
+				throw new Error(error.message || "Gagal menghapus transaksi");
+			}
+			return res.json();
+		},
+		onSuccess: () => {
+			toast.success("Transaksi berhasil dihapus");
+			queryClient.invalidateQueries({ queryKey: ["transactions"] });
+			queryClient.invalidateQueries({ queryKey: ["dashboard", "summary"] });
+		},
+		onError: (error) => {
+			toast.error(error.message);
+		},
+	});
 
 	const formatIDR = (value: number) =>
 		new Intl.NumberFormat("id-ID", {
@@ -111,30 +140,18 @@ export function TransactionList({ transactions }: TransactionListProps) {
 									</TableCell>
 									<TableCell className="text-right">
 										<div className="flex items-center justify-end gap-1 relative">
-											<Sheet>
-												<SheetTrigger asChild>
-													<Button
-														variant="ghost"
-														size="icon"
-														className="h-8 w-8"
-														onClick={() => setActiveTx(tx)}
-													>
-														<Pencil className="h-4 w-4" />
-														<span className="sr-only">Edit</span>
-													</Button>
-												</SheetTrigger>
-												<SheetContent className="w-full sm:max-w-md overflow-y-auto">
-													<SheetHeader className="mb-6">
-														<SheetTitle>Edit Transaksi</SheetTitle>
-													</SheetHeader>
-													{activeTx && (
-														<TransactionForm
-															initialData={activeTx}
-															onSuccess={() => {}}
-														/>
-													)}
-												</SheetContent>
-											</Sheet>
+											<Button
+												variant="ghost"
+												size="icon"
+												className="h-8 w-8"
+												onClick={() => {
+													setActiveTx(tx);
+													setIsEditOpen(true);
+												}}
+											>
+												<Pencil className="h-4 w-4" />
+												<span className="sr-only">Edit</span>
+											</Button>
 
 											<AlertDialog>
 												<AlertDialogTrigger asChild>
@@ -159,8 +176,14 @@ export function TransactionList({ transactions }: TransactionListProps) {
 													</AlertDialogHeader>
 													<AlertDialogFooter>
 														<AlertDialogCancel>Batal</AlertDialogCancel>
-														<AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-															Hapus
+														<AlertDialogAction
+															className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+															onClick={() => deleteMutation.mutate(tx.id)}
+															disabled={deleteMutation.isPending}
+														>
+															{deleteMutation.isPending
+																? "Menghapus..."
+																: "Hapus"}
 														</AlertDialogAction>
 													</AlertDialogFooter>
 												</AlertDialogContent>
@@ -206,33 +229,17 @@ export function TransactionList({ transactions }: TransactionListProps) {
 								{formatIDR(Math.abs(tx.amount))}
 							</span>
 							<div className="flex -mr-2">
-								{/* Simplified mobile actions for now */}
-								<Sheet>
-									<SheetTrigger asChild>
-										<Button
-											variant="ghost"
-											size="icon"
-											className="h-8 w-8"
-											onClick={() => setActiveTx(tx)}
-										>
-											<Pencil className="h-3 w-3" />
-										</Button>
-									</SheetTrigger>
-									<SheetContent
-										className="w-full sm:max-w-md overflow-y-auto"
-										side="bottom"
-									>
-										<SheetHeader className="mb-6">
-											<SheetTitle>Edit Transaksi</SheetTitle>
-										</SheetHeader>
-										{activeTx && (
-											<TransactionForm
-												initialData={activeTx}
-												onSuccess={() => {}}
-											/>
-										)}
-									</SheetContent>
-								</Sheet>
+								<Button
+									variant="ghost"
+									size="icon"
+									className="h-8 w-8"
+									onClick={() => {
+										setActiveTx(tx);
+										setIsEditOpen(true);
+									}}
+								>
+									<Pencil className="h-3 w-3" />
+								</Button>
 								<AlertDialog>
 									<AlertDialogTrigger asChild>
 										<Button
@@ -249,8 +256,12 @@ export function TransactionList({ transactions }: TransactionListProps) {
 										</AlertDialogHeader>
 										<AlertDialogFooter>
 											<AlertDialogCancel>Batal</AlertDialogCancel>
-											<AlertDialogAction className="bg-destructive text-destructive-foreground">
-												Hapus
+											<AlertDialogAction
+												className="bg-destructive text-destructive-foreground"
+												onClick={() => deleteMutation.mutate(tx.id)}
+												disabled={deleteMutation.isPending}
+											>
+												{deleteMutation.isPending ? "Hapus..." : "Hapus"}
 											</AlertDialogAction>
 										</AlertDialogFooter>
 									</AlertDialogContent>
@@ -261,6 +272,30 @@ export function TransactionList({ transactions }: TransactionListProps) {
 				))}
 			</div>
 
+			<Sheet open={isEditOpen} onOpenChange={setIsEditOpen}>
+				<SheetContent
+					className="w-full sm:max-w-md overflow-y-auto"
+					side="right"
+				>
+					<SheetHeader className="mb-6">
+						<SheetTitle>Edit Transaksi</SheetTitle>
+					</SheetHeader>
+					{activeTx && (
+						<TransactionForm
+							initialData={{
+								id: activeTx.id,
+								title: activeTx.rawNote || "",
+								amount: activeTx.amount,
+								date: activeTx.rawDate,
+								type: activeTx.type,
+								categoryId: activeTx.categoryId,
+							}}
+							onSuccess={() => setIsEditOpen(false)}
+						/>
+					)}
+				</SheetContent>
+			</Sheet>
+
 			<Pagination className="justify-center sm:justify-end mt-4">
 				<PaginationContent>
 					<PaginationItem>
@@ -270,9 +305,6 @@ export function TransactionList({ transactions }: TransactionListProps) {
 						<PaginationLink href="#" isActive>
 							1
 						</PaginationLink>
-					</PaginationItem>
-					<PaginationItem>
-						<PaginationLink href="#">2</PaginationLink>
 					</PaginationItem>
 					<PaginationItem>
 						<PaginationNext href="#" />
