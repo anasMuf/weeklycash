@@ -82,11 +82,15 @@ async function main() {
 		where: { name: "Gaji" },
 	});
 
+	if (!foodCat || !salaryCat) {
+		throw new Error("Failed to find default categories");
+	}
+
 	// 3. Seed Transactions Dummy
 	await prisma.transaction.create({
 		data: {
 			userId: dummyUser.id,
-			categoryId: salaryCat?.id,
+			categoryId: salaryCat.id,
 			amount: 5000000,
 			type: TransactionType.INCOME,
 			transactionDate: new Date(),
@@ -97,7 +101,7 @@ async function main() {
 	await prisma.transaction.create({
 		data: {
 			userId: dummyUser.id,
-			categoryId: foodCat?.id,
+			categoryId: foodCat.id,
 			amount: 50000,
 			type: TransactionType.EXPENSE,
 			transactionDate: new Date(),
