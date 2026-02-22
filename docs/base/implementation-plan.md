@@ -112,38 +112,38 @@ Fase 0 (Foundation)  →  Fase 1 (Backend API)  →  Fase 2 (Frontend Pages)
 
 ### 1.1 Auth Endpoints
 
-- [ ] `POST /api/v1/auth/register`
+- [x] `POST /api/v1/auth/register`
   - Zod validation: email (valid format), password (min 8 char), full_name (optional)
   - Hash password → simpan ke DB
   - Return 201 + user data (tanpa password)
   - Return 409 jika email sudah ada
-- [ ] `POST /api/v1/auth/login`
+- [x] `POST /api/v1/auth/login`
   - Zod validation: email, password
   - Cari user by email → verify password
   - Generate JWT token
   - Return 200 + token + user data
   - Return 401 jika invalid
-- [ ] `GET /api/v1/auth/me` (protected)
+- [x] `GET /api/v1/auth/me` (protected)
   - Return profil user yang login
-- [ ] `PUT /api/v1/auth/me` (protected)
+- [x] `PUT /api/v1/auth/me` (protected)
   - Update full_name
   - Return updated user data
-- [ ] **Test**: register → login → access protected route
+- [x] **Test**: register → login → access protected route
 
 ### 1.2 Category Endpoints
 
-- [ ] `GET /api/v1/categories` (protected)
+- [x] `GET /api/v1/categories` (protected)
   - Return kategori default (user_id = null) + kategori kustom milik user
   - Optional filter by `type` (INCOME/EXPENSE)
-- [ ] `POST /api/v1/categories` (protected)
+- [x] `POST /api/v1/categories` (protected)
   - Zod validation: name (required), type (enum), icon (optional)
   - Set user_id = current user, is_default = false
   - Return 201
-- [ ] `PUT /api/v1/categories/:id` (protected)
+- [x] `PUT /api/v1/categories/:id` (protected)
   - Cek ownership (user_id = current user) dan bukan default
   - Return 403 jika kategori default
   - Return 404 jika bukan milik user
-- [ ] `DELETE /api/v1/categories/:id` (protected)
+- [x] `DELETE /api/v1/categories/:id` (protected)
   - Cek ownership dan bukan default
   - Cek apakah masih ada transaksi yang pakai kategori ini
   - Return 409 jika masih ada transaksi terkait
@@ -151,52 +151,52 @@ Fase 0 (Foundation)  →  Fase 1 (Backend API)  →  Fase 2 (Frontend Pages)
 
 ### 1.3 Transaction Endpoints
 
-- [ ] `GET /api/v1/transactions` (protected)
+- [x] `GET /api/v1/transactions` (protected)
   - Filter: `type`, `category_id`, `start_date`, `end_date`
   - Pagination: `page`, `limit` (default 10, max 100)
   - Sorting: `sort` (default `transaction_date`), `order` (default `desc`)
   - Include category relation (id, name, icon)
   - Return `{ data: [...], meta: { page, limit, total } }`
-- [ ] `POST /api/v1/transactions` (protected)
+- [x] `POST /api/v1/transactions` (protected)
   - Zod validation: amount (positive), type (enum), category_id (valid, milik user atau default), transaction_date (not future), note (optional)
   - Validasi: category type harus match transaction type
   - Return 201
-- [ ] `GET /api/v1/transactions/:id` (protected)
+- [x] `GET /api/v1/transactions/:id` (protected)
   - Cek ownership
   - Include category relation
   - Return 404 jika tidak ada/bukan milik user
-- [ ] `PUT /api/v1/transactions/:id` (protected)
+- [x] `PUT /api/v1/transactions/:id` (protected)
   - Cek ownership
   - Partial update (semua field opsional kecuali id)
-- [ ] `DELETE /api/v1/transactions/:id` (protected)
+- [x] `DELETE /api/v1/transactions/:id` (protected)
   - Cek ownership
   - Hard delete
   - Return 200
 
 ### 1.4 Budget Endpoints
 
-- [ ] `GET /api/v1/budgets/current` (protected)
+- [x] `GET /api/v1/budgets/current` (protected)
   - Cari budget dimana `start_date <= today <= end_date`
   - Hitung `spent`: SUM transaksi EXPENSE di rentang tanggal tersebut
   - Hitung `remaining`: `amount_limit - spent`
   - Hitung `percentage`: `(spent / amount_limit) * 100`
   - Hitung `transaction_count`
   - Return 404 jika belum set budget minggu ini
-- [ ] `GET /api/v1/budgets` (protected)
+- [x] `GET /api/v1/budgets` (protected)
   - List semua budget milik user, ordered by start_date desc
   - Pagination
   - Include computed fields: spent, remaining, percentage
-- [ ] `POST /api/v1/budgets` (protected)
+- [x] `POST /api/v1/budgets` (protected)
   - Zod validation: amount_limit (positive), start_date (harus Senin), end_date (harus Minggu, = start_date + 6 hari)
   - Cek unique: belum ada budget di minggu yang sama
   - Return 409 jika sudah ada
-- [ ] `PUT /api/v1/budgets/:id` (protected)
+- [x] `PUT /api/v1/budgets/:id` (protected)
   - Cek ownership
   - Update amount_limit saja
 
 ### 1.5 Dashboard Endpoint
 
-- [ ] `GET /api/v1/dashboard/summary` (protected)
+- [x] `GET /api/v1/dashboard/summary` (protected)
   - `current_budget`: sama dengan GET /budgets/current (atau null)
   - `weekly_summary`: total income, total expense, transaction count (minggu ini)
   - `category_breakdown`: group by category, hitung total + percentage (minggu ini, expense only)
@@ -210,37 +210,66 @@ Fase 0 (Foundation)  →  Fase 1 (Backend API)  →  Fase 2 (Frontend Pages)
 
 > **Goal**: Semua halaman ter-render dengan data mock/dummy, layout sesuai UI Spec.
 
-### 2.1 Setup & Layout
+### 2.1 Frontend Structure (Feature-based)
 
-- [ ] Install shadcn/ui components yang dibutuhkan:
+- [x] Setup struktur folder frontend berbasis fitur untuk skalabilitas:
   ```
+  apps/web/src/
+  ├── core/               # Konfigurasi global & utilitas utama
+  │   ├── api/            # Hono RPC client & react-query configs
+  │   ├── auth/           # Jotai atoms untuk state auth & utility penyimpan token
+  │   └── layout/         # Layout utama (AppLayout, Sidebar, dsb)
+  ├── components/         # Shared UI components (kebanyakan dari shadcn/ui)
+  │   └── ui/             # Button, Input, Table, Card, dsb.
+  ├── features/           # Modul fitur bisnis aplikasi
+  │   ├── auth/           # Komponen spesifik Auth (LoginForm, RegisterForm)
+  │   ├── categories/     # Komponen Categories (CategoryList, CategoryForm)
+  │   ├── transactions/   # Komponen Transaksi (TransactionTable, FilterBar)
+  │   ├── budgets/        # Komponen Budget (BudgetProgressBar, ModalEdit)
+  │   └── dashboard/      # SummaryCards, DashboardCharts
+  ├── routes/             # TanStack Router file-based routing
+  │   ├── _auth.tsx       # Layout guard (redirect param)
+  │   ├── index.tsx       # Root/Redirect ke dashboard
+  │   ├── dashboard.tsx
+  │   ├── transactions/
+  │   ├── budgets/
+  │   └── categories/
+  └── styles.css          # Token UI & Tailwind imports
+  ```
+- [x] Refactor struktur basic TanStack Start yang ter-generate menjadi feature-based sesuai pohon di atas.
+
+### 2.2 Setup & Layout
+
+- [x] Install shadcn/ui components yang dibutuhkan:
+  ```text
   button card input select table badge progress pagination
   alert dialog alert-dialog sheet separator dropdown-menu
   popover calendar textarea toggle-group toast label
   ```
-- [ ] Install `recharts` untuk chart dashboard
-- [ ] Setup Google Font **Inter** di `styles.css`
-- [ ] Buat layout component: `src/components/layout/`
+- [x] Install `jotai` untuk state management
+- [x] Install `recharts` untuk chart dashboard
+- [x] Setup Google Font **Inter** di `styles.css`
+- [x] Pastikan folder `src/components/layout/` (sekarang dipindah ke `src/core/layout/`) sudah ada:
   - `AppLayout.tsx` — sidebar + content area wrapper
   - `Sidebar.tsx` — navigasi utama (5 menu items)
   - `BottomNav.tsx` — mobile bottom navigation
   - `PageHeader.tsx` — judul halaman + action button
-- [ ] Setup auth guard di root route — redirect ke `/login` jika belum login
-- [ ] Definisikan design tokens di `styles.css` (custom CSS variables untuk income/expense/budget colors)
+- [x] Setup auth guard route di `routes/_auth.tsx` — redirect ke `/login` jika belum login
+- [x] Definisikan design tokens di `styles.css` (custom CSS variables untuk income/expense/budget colors)
 
-### 2.2 Auth Pages
+### 2.3 Auth Pages
 
-- [ ] `src/routes/auth/login.tsx`
+- [x] `src/routes/auth/login.tsx`
   - Card centered, form email + password
   - Link ke register
-- [ ] `src/routes/auth/register.tsx`
+- [x] `src/routes/auth/register.tsx`
   - Card centered, form nama + email + password
   - Link ke login
-- [ ] Buat `src/utils/auth.ts` — simpan/hapus/baca JWT token dari localStorage
+- [x] Buat utilitas Auth di `src/core/auth/auth_utils.ts` — simpan/hapus/baca JWT token dari localStorage
 
-### 2.3 Dashboard Page
+### 2.4 Dashboard Page
 
-- [ ] `src/routes/dashboard.tsx`
+- [x] `src/routes/dashboard.tsx` (diimplementasikan di `_auth.index.tsx` sebagai home)
   - Budget card + progress bar (warna dinamis berdasarkan persentase)
   - No-budget banner (jika belum set budget)
   - Summary cards: income, expense, transaction count
@@ -248,43 +277,49 @@ Fase 0 (Foundation)  →  Fase 1 (Backend API)  →  Fase 2 (Frontend Pages)
   - Recent transactions list (5 item)
   - Link "Lihat Semua" ke /transactions
 
-### 2.4 Transaction Pages
+### 2.5 Transaction Pages
 
-- [ ] `src/routes/transactions/index.tsx`
+- [x] `src/routes/transactions/index.tsx`
   - Filter bar: waktu, tipe, kategori, search
   - Summary bar: total income + total expense (terfilter)
   - Table (desktop) / Card list (mobile)
   - Pagination
   - Edit via Sheet (slide-in dari kanan)
   - Delete via AlertDialog
-- [ ] `src/routes/transactions/new.tsx`
+- [x] `src/routes/transactions/new.tsx`
   - Form: type toggle, nominal, category select, date picker, note textarea
   - Auto-format nominal (ribuan)
   - Category dropdown filtered by type
 
-### 2.5 Budget Pages
+### 2.6 Budget Pages
 
-- [ ] `src/routes/budgets/index.tsx`
-  - List card budget per minggu (progress bar + status badge)
-  - Edit via Sheet
-- [ ] `src/routes/budgets/new.tsx`
-  - Form: nominal, date range (auto-filled Senin–Minggu)
+- [x] `src/routes/budgets/index.tsx`
+  - Stack of budget cards (per minggu)
+  - Current week (active state) vs Past weeks
+  - Badges ("Aktif", "On Track", "Over Budget")
+  - Progress bar dinamis (safe/warning/danger)
+  - Klik card -> Sheet form edit
+- [x] `src/routes/budgets/new.tsx`
+  - Nominal input
+  - DateRange picker (auto-filled senin-minggu)
 
-### 2.6 Category Page
+### 2.7 Category Page
 
-- [ ] `src/routes/categories/index.tsx`
-  - Grouped list: Expense categories + Income categories
-  - Default categories (non-editable)
-  - Custom categories (edit/delete buttons)
-  - Add via Dialog
-  - Edit via Dialog (pre-filled)
+- [x] `src/routes/categories/index.tsx`
+  - Dua section list: Pengeluaran dan Pemasukan
+  - Indikator badge default vs kustom
+  - Button Edit (kustom only) -> membuka Dialog form
+  - Button Delete (kustom only) -> AlertDialog konfirmasi
+  - Button "Baru" (header) -> membuka Dialog form (nama, tipe, emoji/ikon)
   - Delete via AlertDialog
 
-### 2.7 Settings Page
+### 2.8 Settings Page
 
-- [ ] `src/routes/settings/index.tsx`
-  - Profil form: nama (editable), email (read-only)
-  - Logout button
+- [x] `src/routes/settings.tsx`
+  - Profil form (Nama editable, Email disabled + lock icon)
+  - Button Simpan
+  - Separator
+  - Button Logout (Destructive) -> clear Token -> Redirect Login
 
 **✅ Fase 2 selesai ketika**: Semua halaman ter-render, navigasi berfungsi, form bisa diisi (tapi belum connect ke API).
 

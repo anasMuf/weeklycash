@@ -9,50 +9,246 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AuthIndexRouteImport } from './routes/_auth.index'
+import { Route as AuthTransactionsIndexRouteImport } from './routes/_auth.transactions.index'
+import { Route as AuthSettingsIndexRouteImport } from './routes/_auth.settings.index'
+import { Route as AuthCategoriesIndexRouteImport } from './routes/_auth.categories.index'
+import { Route as AuthBudgetsIndexRouteImport } from './routes/_auth.budgets.index'
+import { Route as AuthTransactionsNewRouteImport } from './routes/_auth.transactions.new'
+import { Route as AuthBudgetsNewRouteImport } from './routes/_auth.budgets.new'
 
-const IndexRoute = IndexRouteImport.update({
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthIndexRoute = AuthIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthTransactionsIndexRoute = AuthTransactionsIndexRouteImport.update({
+  id: '/transactions/',
+  path: '/transactions/',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthSettingsIndexRoute = AuthSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthCategoriesIndexRoute = AuthCategoriesIndexRouteImport.update({
+  id: '/categories/',
+  path: '/categories/',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthBudgetsIndexRoute = AuthBudgetsIndexRouteImport.update({
+  id: '/budgets/',
+  path: '/budgets/',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthTransactionsNewRoute = AuthTransactionsNewRouteImport.update({
+  id: '/transactions/new',
+  path: '/transactions/new',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthBudgetsNewRoute = AuthBudgetsNewRouteImport.update({
+  id: '/budgets/new',
+  path: '/budgets/new',
+  getParentRoute: () => AuthRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AuthIndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/budgets/new': typeof AuthBudgetsNewRoute
+  '/transactions/new': typeof AuthTransactionsNewRoute
+  '/budgets/': typeof AuthBudgetsIndexRoute
+  '/categories/': typeof AuthCategoriesIndexRoute
+  '/settings/': typeof AuthSettingsIndexRoute
+  '/transactions/': typeof AuthTransactionsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/': typeof AuthIndexRoute
+  '/budgets/new': typeof AuthBudgetsNewRoute
+  '/transactions/new': typeof AuthTransactionsNewRoute
+  '/budgets': typeof AuthBudgetsIndexRoute
+  '/categories': typeof AuthCategoriesIndexRoute
+  '/settings': typeof AuthSettingsIndexRoute
+  '/transactions': typeof AuthTransactionsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_auth': typeof AuthRouteWithChildren
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/_auth/': typeof AuthIndexRoute
+  '/_auth/budgets/new': typeof AuthBudgetsNewRoute
+  '/_auth/transactions/new': typeof AuthTransactionsNewRoute
+  '/_auth/budgets/': typeof AuthBudgetsIndexRoute
+  '/_auth/categories/': typeof AuthCategoriesIndexRoute
+  '/_auth/settings/': typeof AuthSettingsIndexRoute
+  '/_auth/transactions/': typeof AuthTransactionsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/budgets/new'
+    | '/transactions/new'
+    | '/budgets/'
+    | '/categories/'
+    | '/settings/'
+    | '/transactions/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/login'
+    | '/register'
+    | '/'
+    | '/budgets/new'
+    | '/transactions/new'
+    | '/budgets'
+    | '/categories'
+    | '/settings'
+    | '/transactions'
+  id:
+    | '__root__'
+    | '/_auth'
+    | '/login'
+    | '/register'
+    | '/_auth/'
+    | '/_auth/budgets/new'
+    | '/_auth/transactions/new'
+    | '/_auth/budgets/'
+    | '/_auth/categories/'
+    | '/_auth/settings/'
+    | '/_auth/transactions/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_auth/': {
+      id: '/_auth/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthIndexRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/transactions/': {
+      id: '/_auth/transactions/'
+      path: '/transactions'
+      fullPath: '/transactions/'
+      preLoaderRoute: typeof AuthTransactionsIndexRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/settings/': {
+      id: '/_auth/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AuthSettingsIndexRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/categories/': {
+      id: '/_auth/categories/'
+      path: '/categories'
+      fullPath: '/categories/'
+      preLoaderRoute: typeof AuthCategoriesIndexRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/budgets/': {
+      id: '/_auth/budgets/'
+      path: '/budgets'
+      fullPath: '/budgets/'
+      preLoaderRoute: typeof AuthBudgetsIndexRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/transactions/new': {
+      id: '/_auth/transactions/new'
+      path: '/transactions/new'
+      fullPath: '/transactions/new'
+      preLoaderRoute: typeof AuthTransactionsNewRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/budgets/new': {
+      id: '/_auth/budgets/new'
+      path: '/budgets/new'
+      fullPath: '/budgets/new'
+      preLoaderRoute: typeof AuthBudgetsNewRouteImport
+      parentRoute: typeof AuthRoute
     }
   }
 }
 
+interface AuthRouteChildren {
+  AuthIndexRoute: typeof AuthIndexRoute
+  AuthBudgetsNewRoute: typeof AuthBudgetsNewRoute
+  AuthTransactionsNewRoute: typeof AuthTransactionsNewRoute
+  AuthBudgetsIndexRoute: typeof AuthBudgetsIndexRoute
+  AuthCategoriesIndexRoute: typeof AuthCategoriesIndexRoute
+  AuthSettingsIndexRoute: typeof AuthSettingsIndexRoute
+  AuthTransactionsIndexRoute: typeof AuthTransactionsIndexRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthIndexRoute: AuthIndexRoute,
+  AuthBudgetsNewRoute: AuthBudgetsNewRoute,
+  AuthTransactionsNewRoute: AuthTransactionsNewRoute,
+  AuthBudgetsIndexRoute: AuthBudgetsIndexRoute,
+  AuthCategoriesIndexRoute: AuthCategoriesIndexRoute,
+  AuthSettingsIndexRoute: AuthSettingsIndexRoute,
+  AuthTransactionsIndexRoute: AuthTransactionsIndexRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AuthRoute: AuthRouteWithChildren,
+  LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
