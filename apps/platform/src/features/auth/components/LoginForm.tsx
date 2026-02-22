@@ -1,5 +1,4 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useSetAtom } from "jotai";
 import { Wallet } from "lucide-react";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -14,12 +13,10 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { setAuthTokenAtom } from "@/core/auth/atoms";
 import { api } from "@/utils/api";
 
 export function LoginForm() {
 	const navigate = useNavigate();
-	const setAuth = useSetAtom(setAuthTokenAtom);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
@@ -42,9 +39,8 @@ export function LoginForm() {
 			});
 
 			if (res.ok) {
-				const result = await res.json();
-				setAuth(result.data.token);
-				// Success login -> Redirect
+				// Cookie is set automatically by the API response.
+				// Just redirect to dashboard.
 				navigate({ to: "/" });
 			} else {
 				const errorData = await res.json();

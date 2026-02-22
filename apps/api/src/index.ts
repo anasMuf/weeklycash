@@ -8,7 +8,12 @@ import { dashboardRoutes } from "./modules/dashboard/dashboard.routes.js";
 import { transactionRoutes } from "./modules/transactions/transactions.routes.js";
 
 const app = new Hono()
-	.use(cors())
+	.use(
+		cors({
+			origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+			credentials: true,
+		}),
+	)
 	.get("/", (c) => c.json({ message: "WeeklyCash API" }));
 
 const routes = app

@@ -1,6 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
-import { useSetAtom } from "jotai";
 import { Lock, LogOut } from "lucide-react";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
@@ -17,13 +15,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { setAuthTokenAtom } from "@/core/auth/atoms";
 import { api } from "@/utils/api";
 
 export function SettingsForm() {
-	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-	const setAuthToken = useSetAtom(setAuthTokenAtom);
 
 	// Fetch user profile
 	const { data: profileResponse, isLoading: isFetching } = useQuery({
@@ -67,10 +62,14 @@ export function SettingsForm() {
 		updateMutation.mutate(fullName);
 	};
 
-	const handleLogout = () => {
-		setAuthToken(null);
+	const handleLogout = async () => {
+		try {
+			await api.api.v1.auth.logout.$post();
+		} catch {
+			// Even if API call fails, still redirect
+		}
 		queryClient.clear();
-		navigate({ to: "/login" });
+		window.location.href = "/login";
 	};
 
 	const email = profileResponse?.data?.email || "...";

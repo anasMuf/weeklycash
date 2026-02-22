@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { deleteCookie, setCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
 import { authMiddleware } from "../../core/middleware/auth.middleware.js";
 import { prisma } from "../../core/utils/prisma.js";
@@ -10,7 +11,9 @@ import {
 } from "./auth.schema.js";
 import { generateToken, hashPassword, verifyPassword } from "./auth.utils.js";
 
-// Hono context typing if needed, but often inferred
+const COOKIE_NAME = "token";
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days in seconds
+
 type Variables = {
 	userId: string;
 };
@@ -21,7 +24,6 @@ export const authRoutes = new Hono<{ Variables: Variables }>()
 	.post("/register", zValidator("json", registerSchema), async (c) => {
 		const { email, password, fullName } = c.req.valid("json");
 
-		// Check if user already exists
 		const existingUser = await prisma.user.findUnique({
 			where: { email },
 		});
@@ -29,7 +31,6 @@ export const authRoutes = new Hono<{ Variables: Variables }>()
 			throw new HTTPException(409, { message: "Email sudah terdaftar" });
 		}
 
-		// Hash password and save data
 		const hashedPassword = await hashPassword(password);
 		const newUser = await prisma.user.create({
 			data: {
@@ -53,7 +54,6 @@ export const authRoutes = new Hono<{ Variables: Variables }>()
 	.post("/login", zValidator("json", loginSchema), async (c) => {
 		const { email, password } = c.req.valid("json");
 
-		// Find user
 		const user = await prisma.user.findUnique({
 			where: { email },
 		});
@@ -61,16 +61,22 @@ export const authRoutes = new Hono<{ Variables: Variables }>()
 			throw new HTTPException(401, { message: "Email atau password salah" });
 		}
 
-		// Verify password
 		const isPasswordValid = await verifyPassword(password, user.passwordHash);
 		if (!isPasswordValid) {
 			throw new HTTPException(401, { message: "Email atau password salah" });
 		}
 
-		// Generate token
 		const token = await generateToken(user.id);
 
-		// Exclude passwordHash from response
+		// Set HttpOnly cookie
+		setCookie(c, COOKIE_NAME, token, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "Lax",
+			path: "/",
+			maxAge: COOKIE_MAX_AGE,
+		});
+
 		const { passwordHash, ...userData } = user;
 
 		return c.json(
@@ -85,7 +91,15 @@ export const authRoutes = new Hono<{ Variables: Variables }>()
 		);
 	})
 
-	// 3. Get Profile (Protected)
+	// 3. Logout Route
+	.post("/logout", (c) => {
+		deleteCookie(c, COOKIE_NAME, {
+			path: "/",
+		});
+		return c.json({ message: "Logout berhasil" }, 200);
+	})
+
+	// 4. Get Profile (Protected)
 	.get("/me", authMiddleware, async (c) => {
 		const userId = c.get("userId");
 
@@ -107,7 +121,7 @@ export const authRoutes = new Hono<{ Variables: Variables }>()
 		return c.json({ data: user }, 200);
 	})
 
-	// 4. Update Profile (Protected)
+	// 5. Update Profile (Protected)
 	.put(
 		"/me",
 		authMiddleware,
