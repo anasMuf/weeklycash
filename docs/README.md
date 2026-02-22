@@ -54,7 +54,7 @@ And then draft me these:
 - Product Overview
 - Background Problem & Solution
 - Features (Core, NTH (Nice to Have), PTH (Plan to Have))
-- User Stories
+- User Stories (role, action, goal)
 - Reference
 ```
 
