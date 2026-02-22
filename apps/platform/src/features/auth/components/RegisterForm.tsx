@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Wallet } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { api } from "@/utils/api";
+import { api, getApiBaseUrl } from "@/utils/api";
 
 export function RegisterForm() {
 	const navigate = useNavigate();
@@ -23,6 +23,22 @@ export function RegisterForm() {
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
+	const [isChecking, setIsChecking] = useState(true);
+
+	// Guest-only guard: redirect if already authenticated
+	useEffect(() => {
+		fetch(`${getApiBaseUrl()}/api/v1/auth/me`, { credentials: "include" })
+			.then((res) => {
+				if (res.ok) {
+					window.location.href = "/";
+				} else {
+					setIsChecking(false);
+				}
+			})
+			.catch(() => setIsChecking(false));
+	}, []);
+
+	if (isChecking) return null;
 
 	const handleRegister = async (e: React.FormEvent) => {
 		e.preventDefault();

@@ -7,6 +7,10 @@ const baseUrl =
 		(import.meta as any).env?.VITE_API_BASE_URL) ||
 	"http://localhost:8000";
 
+export function getApiBaseUrl() {
+	return baseUrl;
+}
+
 // Create Hono RPC client instance with cookie credentials
 export const api = hc<AppType>(baseUrl, {
 	fetch: (input: RequestInfo | URL, init?: RequestInit) =>

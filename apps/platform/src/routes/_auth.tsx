@@ -1,12 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppLayout } from "../core/layout/AppLayout";
-
-const API_BASE_URL =
-	(typeof import.meta !== "undefined" &&
-		// biome-ignore lint/suspicious/noExplicitAny: env var access
-		(import.meta as any).env?.VITE_API_BASE_URL) ||
-	"http://localhost:8000";
+import { getApiBaseUrl } from "../utils/api";
 
 export const Route = createFileRoute("/_auth")({
 	beforeLoad: async ({ location }) => {
@@ -15,7 +10,7 @@ export const Route = createFileRoute("/_auth")({
 
 		// Client-side navigation: verify auth cookie
 		try {
-			const res = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
+			const res = await fetch(`${getApiBaseUrl()}/api/v1/auth/me`, {
 				credentials: "include",
 			});
 			if (!res.ok) throw new Error("Not authenticated");
@@ -35,7 +30,7 @@ function AuthLayout() {
 
 	useEffect(() => {
 		// Component-level guard: catches SSR hydration where beforeLoad was skipped
-		fetch(`${API_BASE_URL}/api/v1/auth/me`, {
+		fetch(`${getApiBaseUrl()}/api/v1/auth/me`, {
 			credentials: "include",
 		})
 			.then((res) => {
