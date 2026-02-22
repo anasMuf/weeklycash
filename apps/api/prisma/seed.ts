@@ -58,15 +58,22 @@ async function main() {
 	];
 
 	for (const cat of defaultCategories) {
-		await prisma.category.create({
-			data: cat,
+		const existingCat = await prisma.category.findFirst({
+			where: { name: cat.name, type: cat.type, userId: null },
 		});
+		if (!existingCat) {
+			await prisma.category.create({
+				data: cat,
+			});
+		}
 	}
 	console.log("✅ Categories seeded");
 
 	// 2. Seed 1 User Dummy
-	const dummyUser = await prisma.user.create({
-		data: {
+	const dummyUser = await prisma.user.upsert({
+		where: { email: "user@example.com" },
+		update: {},
+		create: {
 			email: "user@example.com",
 			passwordHash: "dummyhash123", // Will be hashed in actual implementation
 			fullName: "John Doe",
@@ -86,43 +93,59 @@ async function main() {
 		throw new Error("Failed to find default categories");
 	}
 
-	// 3. Seed Transactions Dummy
-	await prisma.transaction.create({
-		data: {
-			userId: dummyUser.id,
-			categoryId: salaryCat.id,
-			amount: 5000000,
-			type: TransactionType.INCOME,
-			transactionDate: new Date(),
-			note: "Gaji Bulan Ini",
-		},
+	// 3. Seed Transactions Dummy (only if no transactions exist for this user)
+	const txCount = await prisma.transaction.count({
+		where: { userId: dummyUser.id },
 	});
 
-	await prisma.transaction.create({
-		data: {
-			userId: dummyUser.id,
-			categoryId: foodCat.id,
-			amount: 50000,
-			type: TransactionType.EXPENSE,
-			transactionDate: new Date(),
-			note: "Makan Siang",
-		},
-	});
-	console.log("✅ Transactions seeded");
+	if (txCount === 0) {
+		await prisma.transaction.create({
+			data: {
+				userId: dummyUser.id,
+				categoryId: salaryCat.id,
+				amount: 5000000,
+				type: TransactionType.INCOME,
+				transactionDate: new Date(),
+				note: "Gaji Bulan Ini",
+			},
+		});
+
+		await prisma.transaction.create({
+			data: {
+				userId: dummyUser.id,
+				categoryId: foodCat.id,
+				amount: 50000,
+				type: TransactionType.EXPENSE,
+				transactionDate: new Date(),
+				note: "Makan Siang",
+			},
+		});
+		console.log("✅ Transactions seeded");
+	} else {
+		console.log("ℹ️ Transactions already exist, skipping");
+	}
 
 	// 4. Seed 1 Budget Minggu Ini
 	const today = new Date();
 	const day = today.getDay();
 	const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-	const startOfWeek = new Date(today.setDate(diff));
+	const startOfWeek = new Date(today);
+	startOfWeek.setDate(diff);
 	startOfWeek.setHours(0, 0, 0, 0);
 
 	const endOfWeek = new Date(startOfWeek);
 	endOfWeek.setDate(startOfWeek.getDate() + 6);
 	endOfWeek.setHours(23, 59, 59, 999);
 
-	await prisma.budget.create({
-		data: {
+	await prisma.budget.upsert({
+		where: {
+			userId_startDate: {
+				userId: dummyUser.id,
+				startDate: startOfWeek,
+			},
+		},
+		update: {},
+		create: {
 			userId: dummyUser.id,
 			amountLimit: 2000000,
 			startDate: startOfWeek,
