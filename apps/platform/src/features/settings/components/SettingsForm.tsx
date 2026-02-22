@@ -3,6 +3,17 @@ import { Lock, LogOut } from "lucide-react";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -136,14 +147,35 @@ export function SettingsForm() {
 						Keluar dari akun Anda pada perangkat ini.
 					</p>
 				</div>
-				<Button
-					variant="outline"
-					className="w-full sm:w-auto self-start text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
-					onClick={handleLogout}
-				>
-					<LogOut className="mr-2 h-4 w-4" />
-					Logout
-				</Button>
+				<AlertDialog>
+					<AlertDialogTrigger asChild>
+						<Button
+							variant="outline"
+							className="w-full sm:w-auto self-start text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+						>
+							<LogOut className="mr-2 h-4 w-4" />
+							Logout
+						</Button>
+					</AlertDialogTrigger>
+					<AlertDialogContent>
+						<AlertDialogHeader>
+							<AlertDialogTitle>Yakin ingin keluar?</AlertDialogTitle>
+							<AlertDialogDescription>
+								Anda akan keluar dari akun dan perlu login kembali untuk
+								mengakses data Anda.
+							</AlertDialogDescription>
+						</AlertDialogHeader>
+						<AlertDialogFooter>
+							<AlertDialogCancel>Batal</AlertDialogCancel>
+							<AlertDialogAction
+								onClick={handleLogout}
+								className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+							>
+								Logout
+							</AlertDialogAction>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialog>
 			</div>
 		</div>
 	);
