@@ -1,6 +1,7 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { HTTPException } from "hono/http-exception";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { budgetRoutes } from "./modules/budgets/budgets.routes.js";
 import { categoryRoutes } from "./modules/categories/categories.routes.js";
@@ -14,6 +15,12 @@ const app = new Hono()
 			credentials: true,
 		}),
 	)
+	.onError((err, c) => {
+		if (err instanceof HTTPException) {
+			return c.json({ message: err.message }, err.status);
+		}
+		return c.json({ message: err.message || "Internal Server Error" }, 500);
+	})
 	.get("/", (c) => c.json({ message: "WeeklyCash API" }));
 
 const routes = app

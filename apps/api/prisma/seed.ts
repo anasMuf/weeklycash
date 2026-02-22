@@ -1,5 +1,6 @@
 import { prisma } from "../src/core/utils/prisma.js";
 import { TransactionType } from "../src/generated/prisma/index.js";
+import { hashPassword } from "../src/modules/auth/auth.utils.js";
 
 async function main() {
 	console.log("Starting seed...");
@@ -70,12 +71,15 @@ async function main() {
 	console.log("✅ Categories seeded");
 
 	// 2. Seed 1 User Dummy
+	const hashedPassword = await hashPassword("password123");
 	const dummyUser = await prisma.user.upsert({
 		where: { email: "user@example.com" },
-		update: {},
+		update: {
+			passwordHash: hashedPassword,
+		},
 		create: {
 			email: "user@example.com",
-			passwordHash: "dummyhash123", // Will be hashed in actual implementation
+			passwordHash: hashedPassword,
 			fullName: "John Doe",
 		},
 	});
